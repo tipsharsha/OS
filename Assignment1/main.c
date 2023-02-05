@@ -13,7 +13,6 @@
 // Task 1.Making the arg vector var//
 //Task 2.Make validation of x with the given range(in worker process) and validation of count in parent//
 //Task 3.Make controller which loops and creates child proccesses to process each row and establish 1-1 pipe and let it wait for all n processes//
-//Task 4.
 
 int n;
 int a;
@@ -27,9 +26,9 @@ int validate_row(int* p,int min,int max,int count)//Function each worker uses to
 {
     for (int i =0;i<count;i++)
     {
-    if((p[i]>max) || (p[i] <min)){return 0;}
+    if((p[i]>max) || (p[i] <min)){return 1;}
     }
-    return 1;
+    return 0;
 }
 
 int main(int argc,char *argv[])
@@ -71,7 +70,7 @@ int main(int argc,char *argv[])
             close(fd[i][1]);
             read(fd[i][0],rd,25);
             close(fd[i][1]);
-            printf("%d",validate_row(pi[i],a,b,n));
+            if(validate_row(pi[i],a,b,n)){printf("Entered arguments aren't valid put them in range");}
             printf("%s \n",rd);
             // execlp("ls","ls","-lh",NULL);
             return -1;
