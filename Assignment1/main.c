@@ -25,9 +25,9 @@ char rd[25]="Maybe";
 
 int validate_row(int* p,int min,int max,int count)//Function each worker uses to validate each row
 {
-    for (int i =0;i<=max;i++)
+    for (int i =0;i<count;i++)
     {
-    if((p[i]>max) || p[i] <min){return 0;}
+    if((p[i]>max) || (p[i] <min)){return 0;}
     }
     return 1;
 }
@@ -71,9 +71,9 @@ int main(int argc,char *argv[])
             close(fd[i][1]);
             read(fd[i][0],rd,25);
             close(fd[i][1]);
-
+            printf("%d",validate_row(pi[i],a,b,n));
             printf("%s \n",rd);
-            execlp("ls","ls","-lh",NULL);
+            // execlp("ls","ls","-lh",NULL);
             return -1;
         }
         else
