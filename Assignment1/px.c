@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-int n; 
+ 
 
 int prchk(int n)
 {
@@ -14,11 +14,9 @@ int prchk(int n)
     return 1;
 }
 
-int main()
+int* arr_prime(int p)
 {
-    int p;
-    printf("Enter value of p\n");
-    scanf("%d",&p);
+    int n;
     int* px =(int*) malloc(p*sizeof(int*)); 
     int k;
     int n=0;
@@ -35,10 +33,10 @@ int main()
             break;
         }
     }
-    for(int z=0; z<p; z++)
-    {
-        printf("%d ", px[z]);
-    }
+    // for(int z=0; z<p; z++)
+    // {
+    //     printf("%d ", px[z]);
+    // }
     int m=0;
     int*qx = (int*)malloc(p*sizeof(int*));
     for(int i =0;i<p;i++)
@@ -56,10 +54,10 @@ int main()
             break;
         }
     }
-    for(int w=0; w<p; w++)
-    {
-        printf("%d ", qx[w]);
-    }
+    // for(int w=0; w<p; w++)
+    // {
+    //     printf("%d ", qx[w]);
+    // }
     printf("%d \n", t);
     
     int y = prchk(k);
@@ -76,9 +74,9 @@ int main()
     {
         fx[i]=px[i-p+t-y];
     }
-    for(int w=0; w<2*p+y-t; w++)
-    {
-        printf("%d ", fx[w]);
-    }
-    return 0;
+    // for(int w=0; w<2*p+y-t; w++)
+    // {
+    //     printf("%d ", fx[w]);
+    // }
+    return px;
 }
