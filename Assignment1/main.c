@@ -14,6 +14,7 @@ int p;
 int** pi;//Global Variables
 char wrt[25] = "This is a message";
 char rd[25]="Maybe";
+int*** px;
 
 int validate_row(int* p,int min,int max,int count)//Function each worker uses to validate each row
 {
@@ -23,6 +24,14 @@ int validate_row(int* p,int min,int max,int count)//Function each worker uses to
     }
     return 0;
 }
+
+int* px_for_x(int x)
+{
+    int* p;
+
+    return p;
+}
+
 
 int main(int argc,char *argv[])
 {
