@@ -1,14 +1,7 @@
-
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+//Assignment 1//
+#include "macros.h"
 //Group 27 //
 //2021AAPS0717H//
-#define PRINT(MSG, ...) printf("%d %d %ld %s %s %d : "MSG"\n", getpid(),getppid(),pthread_self(),__FILE__, __FUNCTION__, __LINE__,##__VA_ARGS__)
 
 // Task 1.Making the arg vector var//
 //Task 2.Make validation of x with the given range(in worker process) and validation of count in parent//
