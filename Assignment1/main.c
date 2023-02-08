@@ -35,7 +35,7 @@ int p;
 int** pi;//Global Variables
 char wrt[25] = "This is a message";
 char rd[25]="Maybe";
-int* wpax = (int*)malloc(n*sizeof(int));
+int* wpax;
 int fapx;
 
 int validate_row(int* p,int min,int max,int count)//Function each worker uses to validate each row
@@ -62,6 +62,7 @@ int main(int argc,char *argv[])
     a = atoi(argv[2]);
     b = atoi(argv[3]);
     p = atoi(argv[4]);
+    wpax = (int*)malloc(n*sizeof(int));
     pi = (int**)malloc(n*sizeof(int*)) ;
     for (int i =0;i<n;i++)
     pi[i] = (int*)malloc(n*sizeof(int));
@@ -103,17 +104,18 @@ int main(int argc,char *argv[])
         else
         {
             //Parent process
-            wait(100);
+            sleep(100);
             close(fd[i][0]);
             write(fd[i][1],wrt,strlen(wrt)+1);
             close(fd[i][1]);
+            int l;
             printf("I am a parent\n");
             printf("Child Complete\n");
             for(int i;i<n;i++)
             {
-                int l += wpax;
+                l += wpax[i];
             }
-            fpax = wpax/n;
+            fapx = l/n;
         }
      }
 
@@ -126,6 +128,7 @@ int main(int argc,char *argv[])
     //     }
     //     printf("\n");
     // }
+    free(wpax);
     for(int i=0;i<n;i++) {free(pi[i]);}//freeing all the dynamic memory//
  }
 

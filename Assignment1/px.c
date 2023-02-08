@@ -2,11 +2,11 @@
 #include <stdlib.h>
  
 
-int prchk(int n)
+int prchk(int num)
 {
-    for(int i=2; i<n; i++)
+    for(int i=2; i<num; i++)
     {
-        if(n%i == 0)
+        if(num%i == 0)
         {
             return 0;
         }
@@ -16,19 +16,19 @@ int prchk(int n)
 
 int arr_prime(int p,int k)
 {
-    int n;
     int* px =(int*) malloc(p*sizeof(int*)); 
-    int n=0;
+    int num=0;
     int t = 0;
+    int sum;
     // printf("Enter a Number");
     // scanf("%d", &k);
     for(int i=k+1; ; i++)
     {
         if(prchk(i) == 1)
         {
-            n++;
-            px[n-1] = i;
-            if(n==p)
+            num++;
+            px[num-1] = i;
+            if(num==p)
             break;
         }
     }
