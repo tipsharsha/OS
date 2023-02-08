@@ -14,15 +14,14 @@ int prchk(int n)
     return 1;
 }
 
-int* arr_prime(int p)
+int arr_prime(int p,int k)
 {
     int n;
     int* px =(int*) malloc(p*sizeof(int*)); 
-    int k;
     int n=0;
     int t = 0;
-    printf("Enter a Number");
-    scanf("%d", &k);
+    // printf("Enter a Number");
+    // scanf("%d", &k);
     for(int i=k+1; ; i++)
     {
         if(prchk(i) == 1)
@@ -74,9 +73,9 @@ int* arr_prime(int p)
     {
         fx[i]=px[i-p+t-y];
     }
-    // for(int w=0; w<2*p+y-t; w++)
-    // {
-    //     printf("%d ", fx[w]);
-    // }
-    return px;
+    for(int w=0; w<2*p+y-t; w++)
+    {
+        sum += px[w];
+    }
+    return sum/k;
 }
