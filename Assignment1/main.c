@@ -35,7 +35,8 @@ int p;
 int** pi;//Global Variables
 char wrt[25] = "This is a message";
 char rd[25]="Maybe";
-int*** pxs;
+int* wpax = (int*)malloc(n*sizeof(int));
+int fapx;
 
 int validate_row(int* p,int min,int max,int count)//Function each worker uses to validate each row
 {
@@ -108,6 +109,11 @@ int main(int argc,char *argv[])
             close(fd[i][1]);
             printf("I am a parent\n");
             printf("Child Complete\n");
+            for(int i;i<n;i++)
+            {
+                int l += wpax;
+            }
+            fpax = wpax/n;
         }
      }
 
