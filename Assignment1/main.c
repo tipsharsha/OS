@@ -11,21 +11,21 @@
 //Task 5.Each worker process i after being spawned will do the following:
 // a. Create n threads (say worker threads) where each thread will take a value x from row i
 // and
-// i. Create the set px, subject to the value of p.
-// ii. Calculate the thapx
-// iii. Report it back to the worker process and terminate the thread gracefully.
+// i. Create the set px, subject to the value of p.✅
+// ii. Calculate the thapx✅
+// iii. Report it back to the worker process and terminate the thread gracefully.❌
 // b. The main thread of each worker process i will wait for all spawned worker threads to
-// return the thapx.
+// return the thapx.❌
 // c. Once all n values of thapx are available, and all worker threads have joined, the main
 // thread in the worker process i will calculate the wpapx and write it back to the controller
-// process in the pipe.
+// process in the pipe.❌
 // Task 6. Next, the controller which was waiting to read/receive n values of wpapx from the worker
-// processes will get unblocked after receiving all the n values of wpapx.
+// processes will get unblocked after receiving all the n values of wpapx.❌
 // Task 7. If a worker process is terminated before reporting the wpapx, the same should be handled by
 // the controller by handling the SIGCHLD signal. The controller then will report the error and kill
-// and clean up all worker processes.
+// and clean up all worker processes.⭐❌
 // Task 8. Finally, the controller process will calculate the average of n values of wpapx as fapx and
-// report/print to the console the value of fapx.
+// report/print to the console the value of fapx.✅
 
 //Global Variables
 int n;
@@ -213,6 +213,7 @@ int main(int argc,char *argv[])
                 l += wpax[i];
             }
             fapx = l/n;
+            printf("Value of fapx is %d",fapx);
      
 
 
@@ -227,4 +228,4 @@ int main(int argc,char *argv[])
     free(wpax);
     for(int i=0;i<n;i++) {free(pi[i]);}//freeing all the dynamic memory//
  }
-
+ 
