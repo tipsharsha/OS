@@ -26,7 +26,14 @@
 // and clean up all worker processes.⭐❌
 // Task 8. Finally, the controller process will calculate the average of n values of wpapx as fapx and
 // report/print to the console the value of fapx.✅
-
+void mysighandler(int signum){
+	if (signum = SIGCHLD){
+		PRINT_INFO("A child process was terminated");
+		parentloop=0;
+	}else{
+		PRINT_INFO("Not handled");
+	}
+}
 //Global Variables
 int n;
 int a;

@@ -1,4 +1,4 @@
-#include "../CSF372.h"
+#include "CSF372.h"
 
 #define SZBUF 127
 
