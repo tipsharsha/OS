@@ -24,7 +24,7 @@ int main(void)
     {
         close(fd[1]);
         read(fd[0],rd,25);
-        close(fd[1]);
+        close(fd[0]);
 
         printf("%s \n",rd);
         execlp("ls","ls","-lh",NULL);
