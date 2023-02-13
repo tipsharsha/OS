@@ -189,6 +189,7 @@ int main(int argc,char *argv[])
     }}
     // Creating child,worker processes
     pid_t pid [n];
+    int l;
     for(int i =0;i<n;i++)
      {   
         pid[i] = fork();
@@ -203,15 +204,10 @@ int main(int argc,char *argv[])
             do_worker(i);
             return -1;
         }
-     
             //Control process
             do_control(i);
+            l += wpax[i];
      }
-            int l;
-            for(int i;i<n;i++)
-            {
-                l += wpax[i];
-            }
             fapx = l/n;
             printf("Value of fapx is %d",fapx);
      
@@ -228,4 +224,3 @@ int main(int argc,char *argv[])
     free(wpax);
     for(int i=0;i<n;i++) {free(pi[i]);}//freeing all the dynamic memory//
  }
- 
