@@ -39,7 +39,7 @@ int* wpax;
 int fapx;
 int **fd;
 int **thpax;
-pthread_t *tid;
+pthread_t** tid;
 
 void mysighandler(int signum){
 	if (signum = SIGCHLD){
@@ -161,17 +161,18 @@ void do_worker(int i)
     int wpaxag;
     pthread_attr_t attr;
     pthread_attr_init(&attr);
+    tid[i] = malloc(n*sizeof(pthread_t));
     for(int j=0;j<n;j++)
     {
     struct threadparam thrpar = {i,j,pi[i][j]};
-    pthread_create(&tid[i],&attr,thr,&thrpar);
+    pthread_create(&tid[i][j],&attr,thr,&thrpar);
     wpaxag += thpax[i][j];
     }
     for(int j=0;j<n;j++)
     {
-        pthread_join(tid[i],NULL);
+        pthread_join(tid[i][j],NULL);
     }
-    wpax[i] = wpaxag/n
+    wpax[i] = wpaxag/n;
 }
 //CONTROLLER FUNCTION
 void do_control(int i)
@@ -201,6 +202,7 @@ int main(int argc,char *argv[])
     pi[i] = (int*)malloc(n*sizeof(int));
     for (int i =0;i<n;i++)
     fd[i] = (int*)malloc(2*sizeof(int));
+    tid = (pthread_t**)malloc(n*sizeof(pthread_t*));
     for (int i =0;i<n;i++)
     {
         for (int j =0;j<n;j++)
