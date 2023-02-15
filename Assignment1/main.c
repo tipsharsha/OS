@@ -5,17 +5,19 @@
 
 // Task 1.Making the arg vector var✅//
 //Task 2.Make validation of x with the given range(in worker process) and validation of count in parent✅//
-//Task 3.Make controller which loops and creates child proccesses to process each row and establish 1-1 pipe and let it wait for all n processes✅//
-//Task 4. Each worker process i is aware of the index i of the loop when it is forked and will be responsible for validating the contents of only row number i of the 2D array. Assume 0-based indexing in this case. If any of the row values is invalid, the worker process will report error and terminate.✅
-//TODO:
+//Task 3.Make controller which loops and creates child proccesses to process each row and establish 1-1 pipe
+// and let it wait for all n processes✅//
+//Task 4. Each worker process i is aware of the index i of the loop when it is forked and will be responsible for validating the contents of only row number i of the 2D array. Assume 0-based indexing in this case.
+// If any of the row values is invalid, the worker process will report error and terminate.✅
 //Task 5.Each worker process i after being spawned will do the following:
 // a. Create n threads (say worker threads) where each thread will take a value x from row i
 // and
 // i. Create the set px, subject to the value of p.✅
 // ii. Calculate the thapx✅
-// iii. Report it back to the worker process and terminate the thread gracefully.❌
+// iii. Report it back to the worker process and terminate the thread gracefully.✅
 // b. The main thread of each worker process i will wait for all spawned worker threads to
-// return the thapx.❌
+// return the thapx.✅
+//TODO:
 // c. Once all n values of thapx are available, and all worker threads have joined, the main
 // thread in the worker process i will calculate the wpapx and write it back to the controller
 // process in the pipe.❌
@@ -26,6 +28,7 @@
 // and clean up all worker processes.⭐❌
 // Task 8. Finally, the controller process will calculate the average of n values of wpapx as fapx and
 // report/print to the console the value of fapx.✅
+
 int parentloop = 1;
 //Global Variables
 int n;
@@ -50,12 +53,11 @@ void mysighandler(int signum){
 	}
 }
 
-
+//Structure for thread Params
 struct threadparam
 {
     int i;int j;int value;
 };
-
 
 //Generation of px for x and returning thpax
 int prchk(int num)
