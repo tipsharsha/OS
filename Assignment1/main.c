@@ -39,6 +39,7 @@ int* wpax;
 int fapx;
 int **fd;
 int **thpax;
+pthread_t *tid;
 
 void mysighandler(int signum){
 	if (signum = SIGCHLD){
@@ -158,14 +159,17 @@ void do_worker(int i)
     if(validate_row(pi[i],a,b,n)){PRINT_ERR_EXIT("Given value of an element is not in range");exit(0);}
     printf("%s \n",rd);
     int wpaxag;
-    for(int j=0;j<n;j++)
-    {
-    pthread_t tid;
     pthread_attr_t attr;
     pthread_attr_init(&attr);
+    for(int j=0;j<n;j++)
+    {
     struct threadparam thrpar = {i,j,pi[i][j]};
-    pthread_create(&tid,&attr,thr,&thrpar);
+    pthread_create(&tid[i],&attr,thr,&thrpar);
     wpaxag += thpax[i][j];
+    }
+    for(int j=0;j<n;j++)
+    {
+        pthread_join(tid[i],NULL);
     }
     wpax[i] = wpaxag/n
 }
@@ -229,7 +233,7 @@ int main(int argc,char *argv[])
         }
         else if (pid[i]==0)
         {
-            //Child pocesses
+            //Child processes
             do_worker(i);
             return -1;
         }
