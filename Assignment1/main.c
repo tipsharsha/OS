@@ -26,14 +26,7 @@
 // and clean up all worker processes.⭐❌
 // Task 8. Finally, the controller process will calculate the average of n values of wpapx as fapx and
 // report/print to the console the value of fapx.✅
-void mysighandler(int signum){
-	if (signum = SIGCHLD){
-		PRINT_INFO("A child process was terminated");
-		parentloop=0;
-	}else{
-		PRINT_INFO("Not handled");
-	}
-}
+int parentloop = 1;
 //Global Variables
 int n;
 int a;
@@ -45,6 +38,23 @@ char rd[25]="Maybe";
 int* wpax;
 int fapx;
 int **fd;
+int **thpax;
+
+void mysighandler(int signum){
+	if (signum = SIGCHLD){
+		PRINT_INFO("A child process was terminated");
+		parentloop=0;
+	}else{
+		PRINT_INFO("Not handled");
+	}
+}
+
+
+struct threadparam
+{
+    int i;int j;int value;
+};
+
 
 //Generation of px for x and returning thpax
 int prchk(int num)
@@ -135,8 +145,8 @@ int validate_row(int* p,int min,int max,int count)//Function each worker uses to
 //Thread function
 void *thr (void *param)
 {
-    int x = *((int*)param);
-    arr_prime(x,n);
+    struct threadparam* x = ((struct threadparam*)param);
+    thpax[x->i][x->j]=arr_prime((x->value),n);
     pthread_exit(0);
 }
 //WORKER FUNCTION
@@ -145,25 +155,29 @@ void do_worker(int i)
     close(fd[i][1]);
     read(fd[i][0],rd,25);
     close(fd[i][1]);
-    if(validate_row(pi[i],a,b,n)){printf("Entered arguments aren't valid put them in range");exit(0);}
+    if(validate_row(pi[i],a,b,n)){PRINT_ERR_EXIT("Given value of an element is not in range");exit(0);}
     printf("%s \n",rd);
     for(int j=0;j<n;j++)
     {
     pthread_t tid;
     pthread_attr_t attr;
     pthread_attr_init(&attr);
-    pthread_create(&tid,&attr,thr,(pi[i]+j));
+    struct threadparam thrpar = {i,j,pi[i][j]};
+    pthread_create(&tid,&attr,thr,&thrpar);
     }
 }
 //CONTROLLER FUNCTION
 void do_control(int i)
 {
+    if(parentloop)
+    {
     sleep(100);
     close(fd[i][0]);
     write(fd[i][1],wrt,strlen(wrt)+1);
     close(fd[i][1]);
     printf("I am a parent\n");
     printf("Child Complete\n");
+    }
 }
 // MAIN FUNCTION
 int main(int argc,char *argv[])
@@ -188,7 +202,12 @@ int main(int argc,char *argv[])
         }
     }
     //Creating the pipe for all the workers
-    
+    int** thpax = (int**)malloc(n*sizeof(int*));
+    for(int i= 0;i<n;)
+    {
+        thpax[i] = malloc(n*sizeof(int));
+    }
+
     for(int i=0;i<n;i++)
     { if (pipe(fd[i])==-1)
     {
