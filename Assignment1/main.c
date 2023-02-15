@@ -157,6 +157,7 @@ void do_worker(int i)
     close(fd[i][1]);
     if(validate_row(pi[i],a,b,n)){PRINT_ERR_EXIT("Given value of an element is not in range");exit(0);}
     printf("%s \n",rd);
+    int wpaxag;
     for(int j=0;j<n;j++)
     {
     pthread_t tid;
@@ -164,7 +165,9 @@ void do_worker(int i)
     pthread_attr_init(&attr);
     struct threadparam thrpar = {i,j,pi[i][j]};
     pthread_create(&tid,&attr,thr,&thrpar);
+    wpaxag += thpax[i][j];
     }
+    wpax[i] = wpaxag/n
 }
 //CONTROLLER FUNCTION
 void do_control(int i)
