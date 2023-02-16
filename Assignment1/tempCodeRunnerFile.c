@@ -36,28 +36,28 @@ int a;
 int b;
 int p;
 int** pi;
+char wrt[25] = "This is a message";
+char rd[25]="Maybe";
 int* wpax;
 int fapx;
 int **fd;
 int **thpax;
 pthread_t** tid;
-int status=0;
 
-
-// void mysighandler(int signum){
-// 	if (signum = SIGCHLD){
-// 		PRINT_INFO("A child process was terminated");
-// 		parentloop=0;
-// 	}else{
-// 		PRINT_INFO("Not handled");
-// 	}
-// }
+void mysighandler(int signum){
+	if (signum = SIGCHLD){
+		PRINT_INFO("A child process was terminated");
+		parentloop=0;
+	}else{
+		PRINT_INFO("Not handled");
+	}
+}
 
 //Structure for thread Params
-typedef struct 
+struct threadparam
 {
     int i;int j;int value;
-}threadparam;
+};
 
 //Generation of px for x and returning thpax
 int prchk(int num)
@@ -73,10 +73,10 @@ int prchk(int num)
 }
 int arr_prime(int p,int k)
 {
-    int* px =(int*) malloc(p*sizeof(int*));
+    int* px =(int*) malloc(p*sizeof(int*)); 
     int num=0;
     int t = 0;
-    int sum =0;
+    int sum;
     // printf("Enter a Number");
     // scanf("%d", &k);
     for(int i=k+1; ; i++)
@@ -91,7 +91,7 @@ int arr_prime(int p,int k)
     }
     // for(int z=0; z<p; z++)
     // {
-    //     printf("%d pxz ", px[z]);
+    //     printf("%d ", px[z]);
     // }
     int m=0;
     int*qx = (int*)malloc(p*sizeof(int*));
@@ -112,7 +112,7 @@ int arr_prime(int p,int k)
     }
     // for(int w=0; w<p; w++)
     // {
-    //     printf("\n qx%d ", qx[w]);
+    //     printf("%d ", qx[w]);
     // }
     printf("%d \n", t);
     
@@ -132,18 +132,15 @@ int arr_prime(int p,int k)
     }
     for(int w=0; w<2*p+y-t; w++)
     {
-        sum += fx[w];    
+        sum += px[w];
     }
-    return sum/(2*p+y-t);
-    free(px);
-    free(qx);
+    return sum/k;
 }
 //Row validator
 int validate_row(int* p,int min,int max,int count)//Function each worker uses to validate each row
 {
     for (int i =0;i<count;i++)
     {
-    printf("%d pi value",p[i]);
     if((p[i]>max) || (p[i] <min)){return 1;}
     }
     return 0;
@@ -151,81 +148,46 @@ int validate_row(int* p,int min,int max,int count)//Function each worker uses to
 //Thread function
 void *thr (void *param)
 {
-
-    threadparam* x = ((threadparam*)param);
-    // PRINT_INFO("\nIn THREAD %d %d\n ",((*x).i),((*x).j));
-    printf("\nTHREAD %d %d\n",x->i,x->j);
-    thpax[x->i][x->j]=arr_prime((x->value),p);
-    fprintf(stderr,"\nTHPAX %d %d %d \n",thpax[x->i][x->j],x->i,x->j);
+    struct threadparam* x = ((struct threadparam*)param);
+    thpax[x->i][x->j]=arr_prime((x->value),n);
     pthread_exit(0);
 }
 //WORKER FUNCTION
-int do_worker(int i)
+void do_worker(int i)
 {
-    // PRINT_INFO("Entered the worker");
-    if(validate_row(pi[i],a,b,n)){PRINT_ERR_EXIT("Given value of an element is not in range");return 1;}
-    int wpaxag=0;
-    
+    close(fd[i][1]);
+    read(fd[i][0],rd,25);
+    close(fd[i][1]);
+    if(validate_row(pi[i],a,b,n)){PRINT_ERR_EXIT("Given value of an element is not in range");exit(0);}
+    printf("%s \n",rd);
+    int wpaxag;
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
     tid[i] = malloc(n*sizeof(pthread_t));
-    // PRINT_INFO("CREATED THREADS");
-    threadparam** thrpar;
-    thrpar = (threadparam**)malloc(n*(sizeof(threadparam*)));
-    for(int i =0;i<n;i++)
-    {
-        thrpar[i] = (threadparam*)malloc(n*sizeof(threadparam));
-    }
     for(int j=0;j<n;j++)
     {
-    printf("%d matrix values",pi[i][j]);
-
-    (thrpar[i]+j)->i = i;
-    (thrpar[i]+j)->j = j;
-    (thrpar[i]+j)->value = pi[i][j];
-    printf("\n VALUE %d %d %d struct value\n",(thrpar[i][j]).i,(thrpar[i][j]).j,(thrpar[i][j]).value);
-    pthread_create((tid[i]+j),NULL,thr,&(thrpar[i][j]));
-    printf("\nIS life good\n");
+    struct threadparam thrpar = {i,j,pi[i][j]};
+    pthread_create(&tid[i][j],&attr,thr,&thrpar);
+    wpaxag += thpax[i][j];
     }
-
     for(int j=0;j<n;j++)
     {
         pthread_join(tid[i][j],NULL);
-        printf("IT IS GOOD");
-        for(int i=0;i<n;i++) {free(tid[i]);}
-        free(tid);
-        for(int i=0;i<n;i++){free(thrpar[i]);}
-        free(thrpar);
-        printf("THPAXIJ %d",thpax[i][j]);
-        wpaxag += thpax[i][j];
     }
-        for(int i=0;i<n;i++) {free(thpax[i]);}
-        free(thpax);
-    PRINT_INFO("\nSuccessfully ran all the threads %d",wpaxag);
-    int wpa = wpaxag/n;
-
-    printf("\nwpa,i %d %d",wpa,i);
-    close(fd[i][0]);
-    write(fd[i][1],&wpa,sizeof(int));
-    close(fd[i][1]);
-    printf("\nwill this print\n");
-    // PRINT_INFO("Could close pipes");
+    wpax[i] = wpaxag/n;
 }
 //CONTROLLER FUNCTION
-int do_control(int i)
+void do_control(int i)
 {
-    // if(parentloop)
-    // {
-    // PRINT_INFO("What is happening in last loop %d",i);
-    close(fd[i][1]);
-    printf("Could u close pls");
-    read(fd[i][0],(wpax+i),sizeof(int));
-    printf("%d wpax[%d] \n",wpax[i], i);
+    if(parentloop)
+    {
+    sleep(100);
     close(fd[i][0]);
+    write(fd[i][1],wrt,strlen(wrt)+1);
+    close(fd[i][1]);
     printf("I am a parent\n");
     printf("Child Complete\n");
-    for(int i=0;i<n;i++)
-    {free(fd[i]);}
-    free(fd);
-    return 1;
+    }
 }
 // MAIN FUNCTION
 int main(int argc,char *argv[])
@@ -235,7 +197,6 @@ int main(int argc,char *argv[])
     a = atoi(argv[2]);
     b = atoi(argv[3]);
     p = atoi(argv[4]);
-    printf("%d %d %d %d \n",n,a,b,p);
     wpax = (int*)malloc(n*sizeof(int));
     pi = (int**)malloc(n*sizeof(int*)) ;
     fd = (int**)malloc(n*sizeof(int*)) ;
@@ -244,7 +205,6 @@ int main(int argc,char *argv[])
     for (int i =0;i<n;i++)
     fd[i] = (int*)malloc(2*sizeof(int));
     tid = (pthread_t**)malloc(n*sizeof(pthread_t*));
-    PRINT_INFO("Pthreads created");
     for (int i =0;i<n;i++)
     {
         for (int j =0;j<n;j++)
@@ -253,8 +213,8 @@ int main(int argc,char *argv[])
         }
     }
     //Creating the pipe for all the workers
-    thpax = (int**)malloc(n*sizeof(int*));
-    for(int i= 0;i<n;i++)
+    int** thpax = (int**)malloc(n*sizeof(int*));
+    for(int i= 0;i<n;)
     {
         thpax[i] = malloc(n*sizeof(int));
     }
@@ -264,10 +224,9 @@ int main(int argc,char *argv[])
     {
         fprintf(stderr,"pipe failed");
     }}
-        // PRINT_INFO("Pipes Created");
     // Creating child,worker processes
     pid_t pid [n];
-    int l=0;
+    int l;
     for(int i =0;i<n;i++)
      {   
         pid[i] = fork();
@@ -278,35 +237,27 @@ int main(int argc,char *argv[])
         }
         else if (pid[i]==0)
         {
-            // //Child processes
-            // PRINT_INFO("CHILD PROCESS %d",i);
+            //Child processes
             do_worker(i);
-    printf("\nwillthis \n");
             return -1;
         }
-     }
             //Control process
-        for(int i =0;i<n;i++)
-        {
-            while(wait(&status)!=-1){}
-            // PRINT_INFO("In control now");
-            // PRINT_INFO("Waited for Child Process");
             do_control(i);
-            
-            printf("is this working");
             l += wpax[i];
-            free(wpax);
-            printf("%d",l);
-            free(tid);
-        }
-    
+     }
             fapx = l/n;
-            // printf("Value of fapx is %d",fapx);
+            printf("Value of fapx is %d",fapx);
      
-    
 
-    free(pi);
-    for(int i=0;i<n;i++) {free(pi[i]);}
-    return 1;
-    //freeing all the dynamic memory//
+
+    // for (int i =0;i<n;i++)//for checking the matrix
+    // {
+    //     for (int j =0;j<n;j++)
+    //     {
+    //         printf("%d ",pi[i][j]);
+    //     }
+    //     printf("\n");
+    // }
+    free(wpax);
+    for(int i=0;i<n;i++) {free(pi[i]);}//freeing all the dynamic memory//
  }
