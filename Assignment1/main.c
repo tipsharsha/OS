@@ -22,8 +22,8 @@
 // process in the pipe.✅
 // Task 6. Next, the controller which was waiting to read/receive n values of wpapx from the worker
 // processes will get unblocked after receiving all the n values of wpapx.✅
-// Task 8. Finally, the controller process will calculate the average of n values of wpapx as fapx and
-// report/print to the console the value of fapx.✅
+// Task 8. Finally, the controller process will calculate the average of n values of wpapx as total_avg and
+// report/print to the console the value of total_avg.✅
 //TODO:
 // Task 7. If a worker process is terminated before reporting the wpapx, the same should be handled by
 // the controller by handling the SIGCHLD signal. The controller then will report the error and kill
@@ -35,19 +35,18 @@ typedef struct// ✅
 {
     int i;int j;int value;
 }threadparam;
-int parentloop = 1;
 //Global Variables
-int n;
-int a;
-int b;
-int p;
-int** pi;
-int* wpax;
-int fapx;
-int **fd;
-int **thpax;
-pthread_t** tid;
-int status=0;
+int n;//Number of elements in a matrix
+int a;//Lower limit
+int b;//Upper limit
+int p;//Number of primes to be generated
+int** pi;//The matrix to store all the values
+int* worker_avg;//worker average matrix(wpax)
+int total_avg;//Total average fpax
+int **fd;//Pipe matrix
+int **thread_avg;//Average matrix for every element
+pthread_t** tid;//Thread ids
+int status=0;//
 
 
 // void mysighandler(int signum){
@@ -61,7 +60,7 @@ int status=0;
 
 
 
-//Generation of px for x and returning thpax
+//Generation of px for x and returning thread_avg
 int prchk(int num)//✅
 {
     for(int i=2; i<num; i++)
@@ -141,16 +140,16 @@ int validate_row(int* p,int min,int max,int count)//Function each worker uses to
 void *thr (void *param)//✅
 {
     threadparam* x = ((threadparam*)param);
-    thpax[x->i][x->j]=arr_prime((x->value));
-    PRINT_INFO("ENTERED THREAD %d of WORKER %d with ELEMENT VALUE %d and thpax%d",x->j,x->i,x->value,thpax[x->i][x->j]);
+    thread_avg[x->i][x->j]=arr_prime((x->value));
+    PRINT_INFO("ENTERED THREAD %d of WORKER %d with ELEMENT VALUE %d and thread_avg%d",x->j,x->i,x->value,thread_avg[x->i][x->j]);
     pthread_exit(0);
 }
 //WORKER FUNCTION
-int do_worker(int i)//❓
+int do_worker(int i)//✅
 {
     PRINT_INFO("Entered the worker%d",i);
     if(validate_row(pi[i],a,b,n)){PRINT_ERR_EXIT("Given value of an element is not in range"); return 1;}
-    int wpaxag=0;
+    int worker_avgag=0;
     threadparam* thrpar;
     thrpar = (threadparam*)malloc(n*(sizeof(threadparam)));
     tid[i] = malloc(n*sizeof(pthread_t));
@@ -169,29 +168,29 @@ int do_worker(int i)//❓
 
         pthread_join(tid[i][j],NULL);
         PRINT_INFO("WAITED FOR ALL THE THREADS %d %d",i,j)
-        printf("\nTHPAX WORKER:%d THREAD:%d %d\n",i,j,thpax[i][j]);
-        wpaxag += thpax[i][j];
+        printf("\nthread_avg WORKER:%d THREAD:%d %d\n",i,j,thread_avg[i][j]);
+        worker_avgag += thread_avg[i][j];
     }
         
         free(thrpar);
-        for(int i=0;i<n;i++) {free(thpax[i]);}
-        free(thpax);
-    PRINT_INFO("\nSuccessfully ran all the threads %d of worker %d",wpaxag,i);
-     int wpa = wpaxag/n;
+        for(int i=0;i<n;i++) {free(thread_avg[i]);}
+        free(thread_avg);
+    PRINT_INFO("\nSuccessfully ran all the threads %d of worker %d",worker_avgag,i);
+     int wpa = worker_avgag/n;
 
-    printf("\nDUMMY WPAX OF CHILD PROCESS SENT %d %d",wpa,i);
+    printf("\nDUMMY worker_avg OF CHILD PROCESS SENT %d %d",wpa,i);
     close(fd[i][0]);
     write(fd[i][1],&wpa,sizeof(int));
     close(fd[i][1]);
     PRINT_INFO("EXITING WORKER FUNCTION for %d th time",i);
 }
 //CONTROLLER FUNCTION
-int do_control(int i)//❓
+int do_control(int i)//✅
 {
     PRINT_INFO("ENTERED CONTROL");
     close(fd[i][1]);
-    read(fd[i][0],(wpax+i),sizeof(int));
-    printf("\n%d WPAX[%d] RECIEVED\n",wpax[i], i);
+    read(fd[i][0],(worker_avg+i),sizeof(int));
+    printf("\n%d worker_avg[%d] RECIEVED\n",worker_avg[i], i);
     close(fd[i][0]);
     free(fd[i]);
 
@@ -199,14 +198,14 @@ int do_control(int i)//❓
     return 1;
 }
 // MAIN FUNCTION
-int main(int argc,char *argv[])
+int main(int argc,char *argv[])//✅
 {
     n = atoi(argv[1]);
     if (argc != n*n+5) {PRINT_ERROR("Give valid arguments(>4)");}//Validating the count//
     a = atoi(argv[2]);
     b = atoi(argv[3]);
     p = atoi(argv[4]);
-    wpax = (int*)malloc(n*sizeof(int));
+    worker_avg = (int*)malloc(n*sizeof(int));
     pi = (int**)malloc(n*sizeof(int*)) ;
     fd = (int**)malloc(n*sizeof(int*)) ;
     for (int i =0;i<n;i++)
@@ -224,10 +223,10 @@ int main(int argc,char *argv[])
         }
     }
     //Creating the pipe for all the workers
-    thpax = (int**)malloc(n*sizeof(int*));
+    thread_avg = (int**)malloc(n*sizeof(int*));
     for(int i= 0;i<n;i++)
     {
-        thpax[i] = malloc(n*sizeof(int));
+        thread_avg[i] = malloc(n*sizeof(int));
     }
 
     for(int i=0;i<n;i++)
@@ -249,7 +248,7 @@ int main(int argc,char *argv[])
         else if (pid[i]==0)
         {
             // //Child processes
-            // PRINT_INFO("CHILD PROCESS %d",i);
+            PRINT_INFO("CHILD PROCESS %d",i);
             do_worker(i);
             PRINT_INFO("RETURNED FROM WORKER FUNCTION %d",i);
             return -1;
@@ -262,17 +261,17 @@ int main(int argc,char *argv[])
             PRINT_INFO("SUCCESSFULLY WAITED FOR CHILDREN, GOING TO CONTROL FUNCTION");
             do_control(i);
             PRINT_INFO("RETURNED FROM CONTROL %d",i);
-            l += wpax[i];
-            printf("\nVALUE OF SUM OF ALL WPAX %d %d %d\n",l,n,i);
+            l += worker_avg[i];
+            printf("\nVALUE OF SUM OF ALL worker_avg %d %d %d\n",l,n,i);
             free(tid[i]);
         }  
-       int fapx = l/n;
-        printf("After all the threads calc and child. Parent gives fapx %d\n",fapx);   
+       int total_avg = l/n;
+        printf("After all the threads calc and child. Parent gives total_avg %d\n",total_avg);   
     free(tid);
     free(pid);
-
-    free(wpax);
-    for(int i=0;i<n;i++) {free(pi[i]);}    free(pi);
+    for(int i=0;i<n;i++) {free(pi[i]);}
+    free(worker_avg);
+    free(pi);
     return 1;
     //freeing all the dynamic memory//
  }
