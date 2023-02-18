@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
- 
+int n; 
 
-int prchk(int num)
+int prchk(int n)
 {
-    for(int i=2; i<num; i++)
+    for(int i=2; i<n; i++)
     {
-        if(num%i == 0)
+        if(n%i == 0)
         {
             return 0;
         }
@@ -15,21 +15,23 @@ int prchk(int num)
 }
 
 int main()
-{   int k,p;
-    printf("Enter a Number");
-    scanf("%d %d", &k,&p);
+{
+    int p;
+    printf("Enter value of p\n");
+    scanf("%d",&p);
     int* px =(int*) malloc(p*sizeof(int*)); 
-    int num=0;
+    int k;
+    int n=0;
     int t = 0;
-    int sum;
-    
+    printf("Enter a Number");
+    scanf("%d", &k);
     for(int i=k+1; ; i++)
     {
         if(prchk(i) == 1)
         {
-            num++;
-            px[num-1] = i;
-            if(num==p)
+            n++;
+            px[n-1] = i;
+            if(n==p)
             break;
         }
     }
@@ -39,10 +41,10 @@ int main()
     // }
     int m=0;
     int*qx = (int*)malloc(p*sizeof(int*));
-    for(int i =0;i<p;i++)
-    {
-        qx[i]=1;
-    }
+    // for(int i =0;i<p;i++)
+    // {
+    //     qx[i]=1;
+    // }
     for(int j=k-1; j>1; j--)
     {
         if(prchk(j) == 1)
@@ -76,7 +78,7 @@ int main()
     }
     for(int w=0; w<2*p+y-t; w++)
     {
-     printf("%d",fx[w]);
+        printf("%d ", fx[w]);
     }
-
+    return 0;
 }
