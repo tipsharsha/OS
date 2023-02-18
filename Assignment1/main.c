@@ -236,7 +236,7 @@ int main(int argc,char *argv[])
         PRINT_ERROR("PIPE FAILED");
     }}
     // Creating child,worker processes
-    pid_t pid [n];
+    pid_t* pid =(pid_t*) malloc(n*sizeof(pid_t));
     int l=0;
     for(int i =0;i<n;i++)
      {   
@@ -255,24 +255,24 @@ int main(int argc,char *argv[])
             return -1;
         }
      }
-            //Control process
+        while(wait(&status)!=-1){}    //Control process
         for(int i =0;i<n;i++)
         {
-            while(wait(&status)!=-1){}
+            
             PRINT_INFO("SUCCESSFULLY WAITED FOR CHILDREN, GOING TO CONTROL FUNCTION");
             do_control(i);
             PRINT_INFO("RETURNED FROM CONTROL %d",i);
             l += wpax[i];
-            printf("VALUE OF SUM OF ALL WPAX %d",l);
+            printf("\nVALUE OF SUM OF ALL WPAX %d %d %d\n",l,n,i);
             free(tid[i]);
         }  
-            fapx = l/n;
-            printf("After all the threads calc and child. Parent gives fapx %d",fapx);
+       int fapx = l/n;
+        printf("After all the threads calc and child. Parent gives fapx %d\n",fapx);   
     free(tid);
-    free(fd);
+    free(pid);
+
     free(wpax);
-    free(pi);
-    for(int i=0;i<n;i++) {free(pi[i]);}
+    for(int i=0;i<n;i++) {free(pi[i]);}    free(pi);
     return 1;
     //freeing all the dynamic memory//
  }

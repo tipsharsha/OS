@@ -45,7 +45,7 @@ int** pi;
 int* wpax;
 int fapx;
 int **fd;
-int **thpax;
+
 pthread_t** tid;
 int status=0;
 
@@ -141,13 +141,15 @@ int validate_row(int* p,int min,int max,int count)//Function each worker uses to
 void *thr (void *param)//✅
 {
     threadparam* x = ((threadparam*)param);
-    thpax[x->i][x->j]=arr_prime((x->value));
-    PRINT_INFO("ENTERED THREAD %d of WORKER %d with ELEMENT VALUE %d and thpax%d",x->j,x->i,x->value,thpax[x->i][x->j]);
+    thpax[x->j]=arr_prime((x->value));
+    PRINT_INFO("ENTERED THREAD %d of WORKER %d with ELEMENT VALUE %d and thpax%d",x->j,x->i,x->value,thpax[x->j]);
     pthread_exit(0);
 }
 //WORKER FUNCTION
 int do_worker(int i)//❓
 {
+    int *thpax;
+    thpax = (int*)malloc(n*sizeof(int*));
     PRINT_INFO("Entered the worker%d",i);
     if(validate_row(pi[i],a,b,n)){PRINT_ERR_EXIT("Given value of an element is not in range"); return 1;}
     int wpaxag=0;
@@ -169,12 +171,11 @@ int do_worker(int i)//❓
 
         pthread_join(tid[i][j],NULL);
         PRINT_INFO("WAITED FOR ALL THE THREADS %d %d",i,j)
-        printf("\nTHPAX WORKER:%d THREAD:%d %d\n",i,j,thpax[i][j]);
-        wpaxag += thpax[i][j];
+        printf("\nTHPAX WORKER:%d THREAD:%d %d\n",i,j,thpax[j]);
+        wpaxag += thpax[j];
     }
         
         free(thrpar);
-        for(int i=0;i<n;i++) {free(thpax[i]);}
         free(thpax);
     PRINT_INFO("\nSuccessfully ran all the threads %d of worker %d",wpaxag,i);
      int wpa = wpaxag/n;
@@ -224,12 +225,6 @@ int main(int argc,char *argv[])
         }
     }
     //Creating the pipe for all the workers
-    thpax = (int**)malloc(n*sizeof(int*));
-    for(int i= 0;i<n;i++)
-    {
-        thpax[i] = malloc(n*sizeof(int));
-    }
-
     for(int i=0;i<n;i++)
     { if (pipe(fd[i])==-1)
     {
