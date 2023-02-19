@@ -2,6 +2,7 @@
 #include "CSF372.h"
 //Group 27 //
 //2021AAPS0717H//
+//Contributors:Sriharsha Tippavajhala,Siddharth Rokkam//
 
 // Task 1.Making the arg vector var✅//
 //Task 2.Make validation of x with the given range(in worker process) and validation of count in parent✅//
