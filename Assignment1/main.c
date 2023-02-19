@@ -29,6 +29,8 @@
 // the controller by handling the SIGCHLD signal. The controller then will report the error and kill
 // and clean up all worker processes.⭐❌
 
+//ISSUE:Works for correct params
+
 
 //Structure for thread Params
 typedef struct// ✅
@@ -49,15 +51,14 @@ pthread_t** tid;//Thread ids
 int status=0;//
 
 
-// void mysighandler(int signum){
-// 	if (signum = SIGCHLD){
-// 		PRINT_INFO("A child process was terminated");
-// 		parentloop=0;
-// 	}else{
-// 		PRINT_INFO("Not handled");
-// 	}
-// }
-
+void mysighandler(int signum){
+	if (signum == SIGCHLD){
+		PRINT_INFO("\nA child process was terminated\n");
+	}
+    else{
+		PRINT_INFO("Not handled");
+	}
+}
 
 
 //Generation of px for x and returning thread_avg
@@ -223,6 +224,7 @@ int main(int argc,char *argv[])//✅
     for (int i =0;i<n;i++)
     fd[i] = (int*)malloc(2*sizeof(int));
     tid = (pthread_t**)malloc(n*sizeof(pthread_t*));
+    signal(SIGCHLD, mysighandler);
     for (int i =0;i<n;i++)
     {
         for (int j =0;j<n;j++)
@@ -269,7 +271,6 @@ int main(int argc,char *argv[])//✅
         while(wait(&status)!=-1){}    //Control process
         for(int i =0;i<n;i++)
         {
-            
             PRINT_INFO("SUCCESSFULLY WAITED FOR CHILDREN, GOING TO CONTROL FUNCTION");
             do_control(i);
             PRINT_INFO("RETURNED FROM CONTROL for %dth time ",i);
