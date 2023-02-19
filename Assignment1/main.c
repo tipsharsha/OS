@@ -1,5 +1,5 @@
 //Assignment 1//
-#include "macros.h"
+#include "CSF372.h"
 //Group 27 //
 //2021AAPS0717H//
 
@@ -78,12 +78,14 @@ int arr_prime(int k)//✅
     int num=0;
     int t = 0;
     int sum =0;
+    printf("the primes found for number %d: ",k);
     for(int i=k+1; ; i++)
     {
         if(prchk(i) == 1)
         {
             num++;
             px[num-1] = i;
+            printf("%d ",i);
             if(num==p)
             break;
         }
@@ -96,15 +98,18 @@ int arr_prime(int k)//✅
     }
     for(int j=k-1; j>1; j--)
     {
+
         if(prchk(j) == 1)
         {
             m++;
             qx[p-m] = j;
+            printf("%d ",j);
             t = p-m;
             if(m==p || j==2)
             break;
         }
     }
+    printf("\n");
     int y = prchk(k);
     
     int fx[2*p+y-t];
@@ -119,10 +124,13 @@ int arr_prime(int k)//✅
     {
         fx[i]=px[i-p+t-y];
     }
+    printf("\n Values of px for value %d:",k);
     for(int w=0; w<2*p+y-t; w++)
     {
+        printf("%d ",fx[w]);
         sum += fx[w];    
     }
+    printf("\n");
     return sum/(2*p+y-t);
     free(px);
     free(qx);
@@ -139,15 +147,17 @@ int validate_row(int* p,int min,int max,int count)//Function each worker uses to
 //Thread function
 void *thr (void *param)//✅
 {
+
     threadparam* x = ((threadparam*)param);
+    PRINT_INFO("ENTERED THREAD %d of WORKER %d with ELEMENT VALUE %d",x->j,x->i,x->value);
     thread_avg[x->i][x->j]=arr_prime((x->value));
-    PRINT_INFO("ENTERED THREAD %d of WORKER %d with ELEMENT VALUE %d and thread_avg%d",x->j,x->i,x->value,thread_avg[x->i][x->j]);
+    PRINT_INFO("THREAD %d of WORKER %d with ELEMENT VALUE %d gave thread_avg%d",x->j,x->i,x->value,thread_avg[x->i][x->j]);
     pthread_exit(0);
 }
 //WORKER FUNCTION
 int do_worker(int i)//✅
 {
-    PRINT_INFO("Entered the worker%d",i);
+    PRINT_INFO("Entered the worker%d Processing row %d",i,i);
     if(validate_row(pi[i],a,b,n)){PRINT_ERR_EXIT("Given value of an element is not in range"); return 1;}
     int worker_avgag=0;
     threadparam* thrpar;
@@ -160,6 +170,7 @@ int do_worker(int i)//✅
     (thrpar+j)->j = j;
     (thrpar+j)->value = pi[i][j];
     pthread_create((tid[i]+j),NULL,thr,&(thrpar[j]));
+    PRINT_INFO("Created worker thread %d %d",j,i)
     //✅
     }
 
@@ -167,18 +178,18 @@ int do_worker(int i)//✅
     {
 
         pthread_join(tid[i][j],NULL);
-        PRINT_INFO("WAITED FOR ALL THE THREADS %d %d",i,j)
-        printf("\nthread_avg WORKER:%d THREAD:%d %d\n",i,j,thread_avg[i][j]);
+        PRINT_INFO("WAITED FOR THE THREAD %d %d",i,j)
+        printf("\nthread_avg(thpax) WORKER:%d THREAD:%d %d\n",i,j,thread_avg[i][j]);
         worker_avgag += thread_avg[i][j];
     }
-        
+        PRINT_INFO("Successfully joined all the threads")
         free(thrpar);
         for(int i=0;i<n;i++) {free(thread_avg[i]);}
         free(thread_avg);
     PRINT_INFO("\nSuccessfully ran all the threads %d of worker %d",worker_avgag,i);
      int wpa = worker_avgag/n;
 
-    printf("\nDUMMY worker_avg OF CHILD PROCESS SENT %d %d",wpa,i);
+    printf("\nDUMMY worker_avg(wpax) %d OF CHILD PROCESS%d SENT\n",wpa,i);
     close(fd[i][0]);
     write(fd[i][1],&wpa,sizeof(int));
     close(fd[i][1]);
@@ -190,10 +201,9 @@ int do_control(int i)//✅
     PRINT_INFO("ENTERED CONTROL");
     close(fd[i][1]);
     read(fd[i][0],(worker_avg+i),sizeof(int));
-    printf("\n%d worker_avg[%d] RECIEVED\n",worker_avg[i], i);
+    printf("\n%d worker_avg[%d](wpax) RECIEVED\n",worker_avg[i], i);
     close(fd[i][0]);
     free(fd[i]);
-
     PRINT_INFO("EXITING CONTROL");
     return 1;
 }
@@ -213,8 +223,6 @@ int main(int argc,char *argv[])//✅
     for (int i =0;i<n;i++)
     fd[i] = (int*)malloc(2*sizeof(int));
     tid = (pthread_t**)malloc(n*sizeof(pthread_t*));
-
-    PRINT_INFO("Pthreads created");
     for (int i =0;i<n;i++)
     {
         for (int j =0;j<n;j++)
@@ -222,6 +230,7 @@ int main(int argc,char *argv[])//✅
             pi[i][j] = atoi(argv[n*i+j+5]);
         }
     }
+    PRINT_INFO("Read all the inputs p = %d a = %d b = %d n = %d",p,a,b,n)
     //Creating the pipe for all the workers
     thread_avg = (int**)malloc(n*sizeof(int*));
     for(int i= 0;i<n;i++)
@@ -233,7 +242,10 @@ int main(int argc,char *argv[])//✅
     { if (pipe(fd[i])==-1)
     {
         PRINT_ERROR("PIPE FAILED");
-    }}
+    }
+    PRINT_INFO("Pipes Created");
+    }
+
     // Creating child,worker processes
     pid_t* pid =(pid_t*) malloc(n*sizeof(pid_t));
     int l=0;
@@ -248,7 +260,7 @@ int main(int argc,char *argv[])//✅
         else if (pid[i]==0)
         {
             // //Child processes
-            PRINT_INFO("CHILD PROCESS %d",i);
+            PRINT_INFO("Created Worker%d",i);
             do_worker(i);
             PRINT_INFO("RETURNED FROM WORKER FUNCTION %d",i);
             return -1;
@@ -260,13 +272,13 @@ int main(int argc,char *argv[])//✅
             
             PRINT_INFO("SUCCESSFULLY WAITED FOR CHILDREN, GOING TO CONTROL FUNCTION");
             do_control(i);
-            PRINT_INFO("RETURNED FROM CONTROL %d",i);
+            PRINT_INFO("RETURNED FROM CONTROL for %dth time ",i);
             l += worker_avg[i];
-            printf("\nVALUE OF SUM OF ALL worker_avg %d %d %d\n",l,n,i);
+            printf("\nVALUE OF SUM OF ALL worker_avg(wpax) %d %d %d\n",l,n,i);
             free(tid[i]);
         }  
        int total_avg = l/n;
-        printf("After all the threads calc and child. Parent gives total_avg %d\n",total_avg);   
+        printf("After all the threads calculations and child calculations. Parent gives total_avg(fapx) %d\n",total_avg);   
     free(tid);
     free(pid);
     for(int i=0;i<n;i++) {free(pi[i]);}

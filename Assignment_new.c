@@ -189,14 +189,14 @@ int do_worker(int i)//❓
 //CONTROLLER FUNCTION
 int do_control(int i)//❓
 {
-    PRINT_INFO("ENTERED CONTROL");
+    PRINT_INFO("ENTERED CONTROL FUNCTION");
     close(fd[i][1]);
     read(fd[i][0],(wpax+i),sizeof(int));
     printf("\n%d WPAX[%d] RECIEVED\n",wpax[i], i);
     close(fd[i][0]);
     free(fd[i]);
 
-    PRINT_INFO("EXITING CONTROL");
+    PRINT_INFO("EXITING CONTROL FUNCTION");
     return 1;
 }
 // MAIN FUNCTION
@@ -256,7 +256,6 @@ int main(int argc,char *argv[])
             while(wait(&status)!=-1){}
             PRINT_INFO("SUCCESSFULLY WAITED FOR CHILDREN, GOING TO CONTROL FUNCTION");
             do_control(i);
-            PRINT_INFO("RETURNED FROM CONTROL %d",i);
             l += wpax[i];
             printf("VALUE OF SUM OF ALL WPAX %d",l);
             free(tid[i]);
