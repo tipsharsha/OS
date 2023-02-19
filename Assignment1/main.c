@@ -29,7 +29,7 @@
 // the controller by handling the SIGCHLD signal. The controller then will report the error and kill
 // and clean up all worker processes.⭐❌
 
-//ISSUE:Works for correct params
+//ISSUE:Works only for correct params
 
 
 //Structure for thread Params
