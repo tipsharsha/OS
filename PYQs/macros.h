@@ -31,8 +31,5 @@
 	__LINE__,  errno, ##__VA_ARGS__);	\
 	_exit(-1); \
 	}
-char str[256] = "wow";
-int main(){
-printf("%p %p",str,&str);
-}
+	
 #endif
