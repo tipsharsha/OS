@@ -4,7 +4,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <string.h>
-
+#define MAX_CLIENT 10
 #define SHM_SIZE 1024 // size of shared memory
 #define CONNECT_CHANNEL "/connect"
 int arithmetic_operation(int N1, int N2, char Operation) {
@@ -39,7 +39,8 @@ int main()
 {
     int fd;
     int *shm, *s;
-
+    int flag[MAX_CLIENT]={0};
+    int to_register[MAX_CLIENT]={0};
     // create the shared memory object
     fd = shm_open(CONNECT_CHANNEL, O_CREAT | O_RDWR, 0666);
     if (fd < 0) {
