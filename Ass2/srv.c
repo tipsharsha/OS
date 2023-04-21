@@ -81,7 +81,7 @@ struct response{
 };
 struct shm_blk// struct made for blk requested
 {
-    pthread_mutex_t mutex;
+    int mutex;
     struct request req;
     struct response res;
     int id;
@@ -99,7 +99,7 @@ void *thr (void *param)
     struct shm_blk* comm =  (struct shm_blk*)param;
     L1:
         while(comm->mutex){};
-        pthread_mutex_lock(&(comm->mutex));
+        comm->mutex=1;
         switch((comm->req).type)
         {   
             case UNREGISTER:
@@ -128,7 +128,6 @@ int first_available()
         }
     }
     return -1;
-
 }
 //Arrays Global
 //Keys for the registered client
@@ -152,9 +151,7 @@ int register_client(struct connect* con)
     con->key = 0+space;
     int id = shmget(key_comm,SHM_SIZE,IPC_CREAT | 0666);
     struct shm_blk* comm = (struct shm_blk*)shmat(id, NULL, 0);
-    comm->mutex = PTHREAD_MUTEX_INITIALIZER;
-    pthread_mutex_lock(&(comm->mutex));
-    (comm->req).type = 0;
+    comm->mutex = 1;
     comm->id = id;
     pthread_create(tid+space,NULL,thr,comm);
     con->reg = IDLE;//tell it's registration is complete and get lost
@@ -168,10 +165,11 @@ int main()
     struct connect*con;
     tid = malloc(MAX_CLIENT*sizeof(pthread_t));
     //CONNECT CHANNEL KEY
-    key_connect = ftok(".", 'C');
+    key_connect = ftok(".", 13);
     // create the shared memory segment with read/write permission
     shmid = shmget(key_connect, CONNECT_SIZE, IPC_CREAT | 0666);
-    if (shmid < 0) {
+    if (shmid < 0) 
+    {
         perror("shmget");
         exit(1);
     }
@@ -186,7 +184,8 @@ int main()
     }
     con->mutex = 0;
     con->reg = IDLE;
-    while(TRUE)//Put something so that it will stop at some point
+    
+    while(first_available() != -1)//Put something so that it will stop at some point
         {
             if(con->reg == REGISTER)
         {

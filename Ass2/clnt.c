@@ -33,7 +33,7 @@ struct response{
 };
 struct shm_blk// struct made for blk requested
 {
-    pthread_mutex_t mutex;
+    int mutex;
     struct request req;
     struct response res;
 };
@@ -52,7 +52,7 @@ int main()
     struct connect* con;
     
     // generate the same key used by the server for the shared memory segment
-    key = ftok(".", 'C');
+    key = ftok(".", 13);
 
     // get the shared memory segment created by the server
     shmid = shmget(key, SHM_SIZE, 0666);
@@ -92,10 +92,12 @@ int main()
             comm_id = shmget(key_comm, CONNECT_SIZE, IPC_CREAT | 0666);
             comm = (struct shm_blk*)shmat(shmid, NULL, 0);
             comm->req.type = UNREGISTER;
+            comm->mutex= 0;
             while(TRUE)
             {
                 if(comm->res.clnt_res == 1)
                 {printf("Unregistration Successful");
+                break;
                 }
             }
         case ARITH:
@@ -114,6 +116,7 @@ int main()
             printf("Operand");
             scanf("%c",&operand);
             comm->req.operand = operand;
+            comm->mutex= 0;
             while(TRUE)
             {
                 if(comm->res.clnt_res == 1)
@@ -132,7 +135,7 @@ int main()
             printf("Enter your number for N1");
             scanf("%d",&N1);
             comm->req.N1 = N1;
-            comm->req.operand = operand;
+            comm->mutex= 0;
             while(TRUE)
             {
                 if(comm->res.clnt_res == 1)
@@ -151,7 +154,7 @@ int main()
             printf("Enter your number for N1");
             scanf("%d",&N1);
             comm->req.N1 = N1;
-            comm->req.operand = operand;
+            comm->mutex= 0;
             while(TRUE)
             {
                 if(comm->res.clnt_res == 1)
@@ -170,7 +173,7 @@ int main()
             printf("Enter your number for N1");
             scanf("%d",&N1);
             comm->req.N1 = N1;
-            comm->req.operand = operand;
+            comm->mutex= 0;
             while(TRUE)
             {
                 if(comm->res.clnt_res == 1)
