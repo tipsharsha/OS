@@ -19,12 +19,6 @@
 #define EVENODD 4
 #define ISNEGETIVE 5
 #define IDLE 6
-struct shm_blk// struct made for blk requested
-{
-    pthread_mutex_t mutex;
-    struct request req;
-    struct response res;
-};
 struct request{
     int type;
     int N1;
@@ -36,7 +30,14 @@ struct response{
     int clnt_res;
     int server_res;
     int out; 
-}
+};
+struct shm_blk// struct made for blk requested
+{
+    pthread_mutex_t mutex;
+    struct request req;
+    struct response res;
+};
+
 struct connect
 {
     int mutex;
@@ -62,12 +63,12 @@ int main()
 
     // attach the shared memory segment to the client's address space
     con = (struct connect*) shmat(shmid, NULL, 0);
-    if (con == (char*) -1) {
+    if (con == (struct connect*) -1) {
         perror("shmat");
         exit(1);
     }
     char reg_key;
-    key_t key;
+    key_t key_comm;
     int comm_id;
     int N1,N2;
     char operand;
@@ -82,13 +83,13 @@ int main()
             con->mutex = 1;
             con->reg = 1;
             while(con->reg == REGISTER){};
-            char key =  con->key;
-            printf("You are successfully registered Your Key:%c",key);
+            key_comm =  con->key;
+            printf("You are successfully registered Your Key:%c",key_comm);
         case UNREGISTER:
             printf("Provide your key: ");
             scanf("%c",&reg_key);
-            key = ftok(".", reg_key);
-            comm_id = shmget(key, CONNECT_SIZE, IPC_CREAT | 0666);
+            key_comm = ftok(".", reg_key);
+            comm_id = shmget(key_comm, CONNECT_SIZE, IPC_CREAT | 0666);
             comm = (struct shm_blk*)shmat(shmid, NULL, 0);
             comm->req.type = UNREGISTER;
             while(TRUE)
@@ -100,8 +101,8 @@ int main()
         case ARITH:
             printf("Provide your key: ");
             scanf("%c",&reg_key);
-            key = ftok(".", reg_key);
-            comm_id = shmget(key, CONNECT_SIZE, IPC_CREAT | 0666);
+            key_comm = ftok(".", reg_key);
+            comm_id = shmget(key_comm, CONNECT_SIZE, IPC_CREAT | 0666);
             comm = (struct shm_blk*)shmat(shmid, NULL, 0);
             comm->req.type = ARITH;
             printf("Enter your number for N1");
@@ -111,7 +112,7 @@ int main()
             scanf("%d",&N2);
             comm->req.N2 = N2;
             printf("Operand");
-            scanf("%c",operand);
+            scanf("%c",&operand);
             comm->req.operand = operand;
             while(TRUE)
             {
@@ -124,8 +125,8 @@ int main()
         case ISPRIME:
            printf("Provide your key: ");
             scanf("%c",&reg_key);
-            key = ftok(".", reg_key);
-            comm_id = shmget(key, CONNECT_SIZE, IPC_CREAT | 0666);
+            key_comm = ftok(".", reg_key);
+            comm_id = shmget(key_comm, CONNECT_SIZE, IPC_CREAT | 0666);
             comm = (struct shm_blk*)shmat(shmid, NULL, 0);
             comm->req.type = ISPRIME;
             printf("Enter your number for N1");
@@ -143,8 +144,8 @@ int main()
         case EVENODD:
             printf("Provide your key: ");
             scanf("%c",&reg_key);
-            key = ftok(".", reg_key);
-            comm_id = shmget(key, CONNECT_SIZE, IPC_CREAT | 0666);
+            key_comm = ftok(".", reg_key);
+            comm_id = shmget(key_comm, CONNECT_SIZE, IPC_CREAT | 0666);
             comm = (struct shm_blk*)shmat(shmid, NULL, 0);
             comm->req.type = EVENODD;
             printf("Enter your number for N1");
@@ -162,8 +163,8 @@ int main()
         case ISNEGETIVE:
             printf("Provide your key: ");
             scanf("%c",&reg_key);
-            key = ftok(".", reg_key);
-            comm_id = shmget(key, CONNECT_SIZE, IPC_CREAT | 0666);
+            key_comm = ftok(".", reg_key);
+            comm_id = shmget(key_comm, CONNECT_SIZE, IPC_CREAT | 0666);
             comm = (struct shm_blk*)shmat(shmid, NULL, 0);
             comm->req.type = ISNEGETIVE;
             printf("Enter your number for N1");

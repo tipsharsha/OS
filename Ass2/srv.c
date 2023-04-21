@@ -20,74 +20,9 @@
 #define EVENODD 4
 #define ISNEGETIVE 5
 #define IDLE 6
-
-struct shm_blk// struct made for blk requested
-{
-    pthread_mutex_t mutex;
-    struct request req;
-    struct response res;
-    int id;
-};
-struct request{
-    int type;
-    int N1;
-    int N2;
-    char operand;
-};
-struct response{
-    int response_code;
-    int clnt_res;
-    int server_res;
-    int out; 
-}
-struct connect
-{
-    int mutex;
-    int reg;
-    char key;
-};
 int flag[MAX_CLIENT]={0};//Takes care of how many clients are registered
 int to_register[MAX_CLIENT]={0};
 pthread_t* tid;
-void *thr (void *param)
-{
-    struct shm_blk* comm =  (struct shm_blk*)param;
-    L1:
-        while(comm->mutex){};
-        pthread_mutex_lock(comm->mutex);
-        switch((comm->req).type)
-        {   
-            case UNREGISTER:
-            shmdt(comm);
-            shmctl(comm->id, IPC_RMID, NULL);
-            pthread_exit();
-            case ARITH: (comm->res).out = arithmetic_operation((comm->request).N1,(comm->request).N2,(comm->request).operand);
-            case ISPRIME: (comm->res).out = prchk((comm->request).N1);
-            case EVENODD: (comm->res).out = even_or_odd((comm->request).N1);
-            case ISNEGETIVE : (comm->res).out = is_negetive((comm->request).N1);
-        }
-        comm->res.clnt_res = 1;
-        comm->res.server_res += 1;
-        printf("You have been served for %dth time", comm->res.server_res);
-    goto L1;
-}
-
-//Function to search first space available in buffer
-int first_available()
-{ 
-    for(int i=0;i<MAX_CLIENT;i++)
-    {   
-        if(flag[i] == FALSE)
-        {
-            return i;
-        }
-    }
-    return -1;
-
-}
-//Arrays Global
-//Keys for the registered client
-//For the functionality
 int prchk(int num)//✅
 {
     for(int i=2; i<num; i++)
@@ -132,6 +67,73 @@ int is_negetive(int n)
     {if (n<0){return TRUE;}
     return FALSE;
 }
+struct request{
+    int type;
+    int N1;
+    int N2;
+    char operand;
+};
+struct response{
+    int response_code;
+    int clnt_res;
+    int server_res;
+    int out; 
+};
+struct shm_blk// struct made for blk requested
+{
+    pthread_mutex_t mutex;
+    struct request req;
+    struct response res;
+    int id;
+};
+
+struct connect
+{
+    int mutex;
+    int reg;
+    char key;
+};
+
+void *thr (void *param)
+{
+    struct shm_blk* comm =  (struct shm_blk*)param;
+    L1:
+        while(comm->mutex){};
+        pthread_mutex_lock(&(comm->mutex));
+        switch((comm->req).type)
+        {   
+            case UNREGISTER:
+            shmdt(comm);
+            shmctl(comm->id, IPC_RMID, NULL);
+            pthread_exit(0);
+            case ARITH: (comm->res).out = arithmetic_operation((comm->req).N1,(comm->req).N2,(comm->req).operand);
+            case ISPRIME: (comm->res).out = prchk((comm->req).N1);
+            case EVENODD: (comm->res).out = even_or_odd((comm->req).N1);
+            case ISNEGETIVE : (comm->res).out = is_negetive((comm->req).N1);
+        }
+        comm->res.clnt_res = 1;
+        comm->res.server_res += 1;
+        printf("You have been served for %dth time", comm->res.server_res);
+    goto L1;
+}
+
+//Function to search first space available in buffer
+int first_available()
+{ 
+    for(int i=0;i<MAX_CLIENT;i++)
+    {   
+        if(flag[i] == FALSE)
+        {
+            return i;
+        }
+    }
+    return -1;
+
+}
+//Arrays Global
+//Keys for the registered client
+//For the functionality
+
 //Register a client
 int register_client(struct connect* con)
 {
@@ -150,11 +152,11 @@ int register_client(struct connect* con)
     con->key = 0+space;
     int id = shmget(key_comm,SHM_SIZE,IPC_CREAT | 0666);
     struct shm_blk* comm = (struct shm_blk*)shmat(id, NULL, 0);
-    comm->mutex = pthread_mutex_init();
-    pthread_mutex_lock(comm->mutex);
+    comm->mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_lock(&(comm->mutex));
     (comm->req).type = 0;
     comm->id = id;
-    pthread_create(tid[space],NULL,thr,comm);
+    pthread_create(tid+space,NULL,thr,comm);
     con->reg = IDLE;//tell it's registration is complete and get lost
     printf("Client %d has been Registered",space);
 }
@@ -164,7 +166,7 @@ int main()
     int shmid;
     key_t key_connect;
     struct connect*con;
-    tid[i] = malloc(MAX_CLIENT*sizeof(pthread_t));
+    tid = malloc(MAX_CLIENT*sizeof(pthread_t));
     //CONNECT CHANNEL KEY
     key_connect = ftok(".", 'C');
     // create the shared memory segment with read/write permission
