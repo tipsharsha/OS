@@ -6,6 +6,8 @@
 #include <sys/shm.h>
 #include <sys/mman.h>
 #include <string.h>
+#include <iostream>
+using namespace std;
 #define SHM_SIZE 1024
 #define TRUE 1
 #define FALSE 0
@@ -52,10 +54,10 @@ int main()
     struct connect* con;
     
     // generate the same key used by the server for the shared memory segment
-    key = ftok(".", 13);
+    key = 13;
 
     // get the shared memory segment created by the server
-    shmid = shmget(key, SHM_SIZE, 0666);
+    shmid = shmget(key, CONNECT_SIZE, IPC_CREAT|0666);
     if (shmid < 0) {
         perror("shmget");
         exit(1);
@@ -73,33 +75,36 @@ int main()
     int N1,N2;
     char operand;
     struct shm_blk* comm;
-    while(TRUE)
-    {printf("Enter your choice \n 0-Register\n 1-Unregister\n 2-Arithmetic\n 3-IsPrime\n 4-EvenOdd \n 5-ISNEGETIVE");
+    int want_continue =1;
+    printf("%d",con->mutex); 
+    while(want_continue)
+    {printf("Enter your choice \n 0-Register\n 1-Unregister\n 2-Arithmetic\n 3-IsPrime\n 4-EvenOdd \n 5-ISNEGETIVE\n");
     scanf("%d",&select);
     switch(select)
     {
         case REGISTER:
+            printf("Entered Register");
             while(con->mutex){};
             con->mutex = 1;
-            con->reg = 1;
+            con->reg = REGISTER;
             while(con->reg == REGISTER){};
             key_comm =  con->key;
-            printf("You are successfully registered Your Key:%c",key_comm);
+            // printf("You are successfully registered Your Key:%c",key_comm);
+            cout<<key_comm<<endl;
+            break;
         case UNREGISTER:
-            printf("Provide your key: ");
+            // printf("Provide your key: ");
+            cout<<"provide your key"<<endl;
             scanf("%c",&reg_key);
             key_comm = ftok(".", reg_key);
             comm_id = shmget(key_comm, CONNECT_SIZE, IPC_CREAT | 0666);
             comm = (struct shm_blk*)shmat(shmid, NULL, 0);
             comm->req.type = UNREGISTER;
             comm->mutex= 0;
-            while(TRUE)
-            {
-                if(comm->res.clnt_res == 1)
-                {printf("Unregistration Successful");
-                break;
-                }
-            }
+            while(comm->res.clnt_res != 1){};
+            cout<<"Ureg"<<endl;
+            break;
+            // printf("Unregistration Successful");
         case ARITH:
             printf("Provide your key: ");
             scanf("%c",&reg_key);
@@ -117,14 +122,9 @@ int main()
             scanf("%c",&operand);
             comm->req.operand = operand;
             comm->mutex= 0;
-            while(TRUE)
-            {
-                if(comm->res.clnt_res == 1)
-                {
-                    printf("Output %d",comm->res.out);
-                break;
-                }
-            }
+            while(comm->res.clnt_res != 1){};
+            printf("Output %d",comm->res.out);
+            break;
         case ISPRIME:
            printf("Provide your key: ");
             scanf("%c",&reg_key);
@@ -136,14 +136,9 @@ int main()
             scanf("%d",&N1);
             comm->req.N1 = N1;
             comm->mutex= 0;
-            while(TRUE)
-            {
-                if(comm->res.clnt_res == 1)
-                {
-                    printf("Output %d",comm->res.out);
-                break;
-                }
-            }
+            while(comm->res.clnt_res != 1){};
+            printf("Output %d",comm->res.out);
+            break;
         case EVENODD:
             printf("Provide your key: ");
             scanf("%c",&reg_key);
@@ -155,14 +150,9 @@ int main()
             scanf("%d",&N1);
             comm->req.N1 = N1;
             comm->mutex= 0;
-            while(TRUE)
-            {
-                if(comm->res.clnt_res == 1)
-                {
-                    printf("Output %d",comm->res.out);
-                break;
-                }
-            }
+             while(comm->res.clnt_res != 1){};
+            printf("Output %d",comm->res.out);
+            break;
         case ISNEGETIVE:
             printf("Provide your key: ");
             scanf("%c",&reg_key);
@@ -174,15 +164,12 @@ int main()
             scanf("%d",&N1);
             comm->req.N1 = N1;
             comm->mutex= 0;
-            while(TRUE)
-            {
-                if(comm->res.clnt_res == 1)
-                {
-                    printf("Output %d",comm->res.out);
-                break;
-                }
-            }
-    }
+             while(comm->res.clnt_res != 1){};
+            printf("Output %d",comm->res.out);
+            break;
+     }
+    printf("want to continue");
+    scanf("%d",&want_continue);
     }
 
     // read the message from the shared memory and write a response
