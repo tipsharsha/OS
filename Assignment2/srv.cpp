@@ -99,25 +99,40 @@ struct connect
 
 void *thr (void *param)
 {
+    cout<<"thread has been created"<<endl;
     struct shm_blk* comm =  (struct shm_blk*)param;
-    L1:
+    cout<<comm->mutex<<endl;
+    while(TRUE)
+        {
+        comm->res.clnt_res = 0;
+        cout<<"it is locked"<<endl;
+        cout<<comm->id<<endl;
         while(comm->mutex){};
+        cout<<"it got unlocked";
         comm->mutex=1;
         switch((comm->req).type)
         {   
             case UNREGISTER:
-            shmdt(comm);
-            shmctl(comm->id, IPC_RMID, NULL);
-            pthread_exit(0);
-            case ARITH: (comm->res).out = arithmetic_operation((comm->req).N1,(comm->req).N2,(comm->req).operand);
-            case ISPRIME: (comm->res).out = prchk((comm->req).N1);
-            case EVENODD: (comm->res).out = even_or_odd((comm->req).N1);
-            case ISNEGETIVE : (comm->res).out = is_negetive((comm->req).N1);
+                shmdt(comm);
+                shmctl(comm->id, IPC_RMID, NULL);
+                break;
+
+            case ARITH: 
+                cout<<"tried aarith"<<endl;
+                (comm->res).out = arithmetic_operation((comm->req).N1,(comm->req).N2,(comm->req).operand);
+                break;
+            case ISPRIME:
+                (comm->res).out = prchk((comm->req).N1);
+                break;
+            case EVENODD:
+                (comm->res).out = even_or_odd((comm->req).N1);
+                break;
+            case ISNEGETIVE : (comm->res).out = is_negetive((comm->req).N1);break;
         }
         comm->res.clnt_res = 1;
         comm->res.server_res += 1;
         printf("You have been served for %dth time", comm->res.server_res);
-    goto L1;
+        }pthread_exit(0);
 }
 
 //Function to search first space available in buffer
@@ -141,18 +156,21 @@ int register_client(struct connect* con)
 {
     
     int space = first_available();
-    if (space != -1)
+    if (space != -1 && space< MAX_CLIENT)
     {
         flag[space] = TRUE;
     }
     else{
-
+        return 0;
         //BUFFER FULL
     }
     //Generate key
-    key_t key_comm = ftok(".",0+space);
+    
     con->key = 33+space;
+    key_t key_comm = ftok(".",con->key);
+    cout<<"created thread with key"<<key_comm<<endl;
     int id = shmget(key_comm,SHM_SIZE,IPC_CREAT | 0666);
+    cout<<id<<endl;
     struct shm_blk* comm = (struct shm_blk*)shmat(id, NULL, 0);
     comm->mutex = 1;
     comm->id = id;
@@ -171,7 +189,7 @@ int main()
     //CONNECT CHANNEL KEY
     key_connect = 13;
     // create the shared memory segment with read/write permission
-    shmid = shmget(key_connect, CONNECT_SIZE, IPC_CREAT | 0666);
+    shmid = shmget(key_connect, sizeof(struct connect), IPC_CREAT | 0666);
     if (shmid < 0) 
     {
         perror("shmget");
@@ -187,7 +205,7 @@ int main()
     con->mutex = 0;
     con->reg = IDLE;
     con->key = 'A';
-    while(first_available() != -1)//Put something so that it will stop at some point
+    while(1)//Put something so that it will stop at some point
         {
             if(con->reg == REGISTER)
         {

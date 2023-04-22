@@ -38,6 +38,7 @@ struct shm_blk// struct made for blk requested
     int mutex;
     struct request req;
     struct response res;
+    int id;
 };
 
 struct connect
@@ -57,7 +58,7 @@ int main()
     key = 13;
 
     // get the shared memory segment created by the server
-    shmid = shmget(key, CONNECT_SIZE, IPC_CREAT|0666);
+    shmid = shmget(key, sizeof(struct connect), IPC_CREAT|0666);
     if (shmid < 0) {
         perror("shmget");
         exit(1);
@@ -88,9 +89,10 @@ int main()
             con->mutex = 1;
             con->reg = REGISTER;
             while(con->reg == REGISTER){};
-            key_comm =  con->key;
+            reg_key =  con->key;
             // printf("You are successfully registered Your Key:%c",key_comm);
-            cout<<key_comm<<endl;
+            cout<<reg_key<<endl;
+            con->mutex =0;
             break;
         case UNREGISTER:
             // printf("Provide your key: ");
@@ -107,11 +109,16 @@ int main()
             // printf("Unregistration Successful");
         case ARITH:
             printf("Provide your key: ");
-            scanf("%c",&reg_key);
-            key_comm = ftok(".", reg_key);
-            comm_id = shmget(key_comm, CONNECT_SIZE, IPC_CREAT | 0666);
-            comm = (struct shm_blk*)shmat(shmid, NULL, 0);
+            fflush(stdout);
+            fflush(stdin);
+            cin>>reg_key;
+            key_comm = ftok(".",reg_key);
+            cout<<key_comm<<endl; 
+            comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
+            comm = (struct shm_blk*)shmat(comm_id, NULL, 0);
             comm->req.type = ARITH;
+            cout<<comm->id<<endl;
+            cout<<comm->mutex<<endl;
             printf("Enter your number for N1");
             scanf("%d",&N1);
             comm->req.N1 = N1;
@@ -119,7 +126,7 @@ int main()
             scanf("%d",&N2);
             comm->req.N2 = N2;
             printf("Operand");
-            scanf("%c",&operand);
+            cin>>operand;
             comm->req.operand = operand;
             comm->mutex= 0;
             while(comm->res.clnt_res != 1){};
@@ -127,11 +134,16 @@ int main()
             break;
         case ISPRIME:
            printf("Provide your key: ");
-            scanf("%c",&reg_key);
-            key_comm = ftok(".", reg_key);
-            comm_id = shmget(key_comm, CONNECT_SIZE, IPC_CREAT | 0666);
-            comm = (struct shm_blk*)shmat(shmid, NULL, 0);
+            fflush(stdout);
+            fflush(stdin);
+            cin>>reg_key;
+            key_comm = ftok(".",reg_key);
+            cout<<key_comm<<endl; 
+            comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
+            comm = (struct shm_blk*)shmat(comm_id, NULL, 0);
             comm->req.type = ISPRIME;
+            cout<<comm->id<<endl;
+            cout<<comm->mutex<<endl;
             printf("Enter your number for N1");
             scanf("%d",&N1);
             comm->req.N1 = N1;
@@ -141,30 +153,40 @@ int main()
             break;
         case EVENODD:
             printf("Provide your key: ");
-            scanf("%c",&reg_key);
-            key_comm = ftok(".", reg_key);
-            comm_id = shmget(key_comm, CONNECT_SIZE, IPC_CREAT | 0666);
-            comm = (struct shm_blk*)shmat(shmid, NULL, 0);
+            fflush(stdout);
+            fflush(stdin);
+            cin>>reg_key;
+            key_comm = ftok(".",reg_key);
+            cout<<key_comm<<endl; 
+            comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
+            comm = (struct shm_blk*)shmat(comm_id, NULL, 0);
             comm->req.type = EVENODD;
+            cout<<comm->id<<endl;
+            cout<<comm->mutex<<endl;
             printf("Enter your number for N1");
             scanf("%d",&N1);
             comm->req.N1 = N1;
             comm->mutex= 0;
-             while(comm->res.clnt_res != 1){};
+            while(comm->res.clnt_res != 1){};
             printf("Output %d",comm->res.out);
             break;
         case ISNEGETIVE:
             printf("Provide your key: ");
-            scanf("%c",&reg_key);
-            key_comm = ftok(".", reg_key);
-            comm_id = shmget(key_comm, CONNECT_SIZE, IPC_CREAT | 0666);
-            comm = (struct shm_blk*)shmat(shmid, NULL, 0);
+            fflush(stdout);
+            fflush(stdin);
+            cin>>reg_key;
+            key_comm = ftok(".",reg_key);
+            cout<<key_comm<<endl; 
+            comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
+            comm = (struct shm_blk*)shmat(comm_id, NULL, 0);
             comm->req.type = ISNEGETIVE;
+            cout<<comm->id<<endl;
+            cout<<comm->mutex<<endl;
             printf("Enter your number for N1");
             scanf("%d",&N1);
             comm->req.N1 = N1;
             comm->mutex= 0;
-             while(comm->res.clnt_res != 1){};
+            while(comm->res.clnt_res != 1){};
             printf("Output %d",comm->res.out);
             break;
      }
