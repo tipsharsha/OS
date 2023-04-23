@@ -22,6 +22,24 @@
 #define EVENODD 4
 #define ISNEGETIVE 5
 #define IDLE 6
+#define PRINT_INFO(MSG, ...) { \
+	printf ( "%s INFO %d:%d %ld %s %s %d : " MSG ";;\n", \
+	"TODO_PRINT_TIME", getpid(), getppid(), pthread_self(), __FILE__, __FUNCTION__, \
+	__LINE__,  ##__VA_ARGS__); \
+}
+
+#define PRINT_ERROR(MSG, ...) { \
+	printf ( "%s ERROR %d:%d %ld %s %s %d : [%d] " MSG ";;\n", \
+	"TODO_PRINT_TIME", getpid(), getppid(), pthread_self(), __FILE__, __FUNCTION__, \
+	__LINE__,  errno, ##__VA_ARGS__);	\
+	}
+	
+#define PRINT_ERR_EXIT(MSG, ...) { \
+	printf ( "%s ERROR %d:%d %ld %s %s %d : [%d] " MSG ";;\n", \
+	"TODO_PRINT_TIME", getpid(), getppid(), pthread_self(), __FILE__, __FUNCTION__, \
+	__LINE__,  errno, ##__VA_ARGS__);	\
+	_exit(-1); \
+}
 int flag[MAX_CLIENT]={0};//Takes care of how many clients are registered
 int to_register[MAX_CLIENT]={0};
 int client_requests =0;
@@ -65,7 +83,7 @@ int arithmetic_operation(int N1, int N2, char Operation) {
             result = N1 / N2;
             break;
         default:
-            printf("Invalid operation\n");
+            PRINT_ERROR("Invalid operation")
             result = 0;
     }
     return result;
@@ -113,7 +131,7 @@ void *sum (void *param)
     int input;
     while(1)
     {
-        if(scanf("%d",&input)){printf("total requests processed %d\ntotal clients registered %d\n",client_requests,total_clients());}
+        if(scanf("%d",&input)){PRINT_INFO("total requests processed %d\ntotal clients registered %d\n",client_requests,total_clients())}
     }
 }
 
@@ -134,37 +152,37 @@ void *thr (void *param)
             shmdt(comm);
             shmctl(x, IPC_RMID, NULL);
             flag[y] = FALSE;
-            printf("Client%d's comm channel has been successfully deleted\n",y);
+            PRINTINFO("Client%d's comm channel has been successfully deleted\n",y);
             client_requests += 1;
             break;
         }
         switch((comm->req).type)
         {
             case ARITH: 
-                printf("Request for Arithmetic recieved\n");
+                PRINT_INFO("Request for Arithmetic recieved\n");
                 (comm->res).out = arithmetic_operation((comm->req).N1,(comm->req).N2,(comm->req).operand);
                 break;
             case ISPRIME:
-                printf("Request for prime check recieved\n");
+                PRINT_INFO("Request for prime check recieved\n");
                 (comm->res).out = prchk((comm->req).N1);
                 break;
             case EVENODD:
-                printf("Request for evenodd check recieved\n");
+                PRINT_INFO("Request for evenodd check recieved\n");
                 (comm->res).out = even_or_odd((comm->req).N1);
                 break;
             case ISNEGETIVE :
-                printf("Request for negetive check recieved\n");
+                PRINT_INFO("Request for negetive check recieved\n");
                 (comm->res).out = is_negetive((comm->req).N1);break;
         }
-        printf("Success!The result has been sent on comm channel\n");
+        PRINT_INFO("Success!The result has been sent on comm channel\n");
         comm->res.clnt_res = 1;
         comm->res.server_res += 1;
         client_requests += 1;
-        printf("Requests serviced to this client = %d time\n", comm->res.server_res);
+        PRINT_INFO("Requests serviced to this client = %d time\n", comm->res.server_res);
         fflush(stdout);
-        printf("Total requests handled by the client %d\n",client_requests);
+        PRINT_INFO("Total requests handled by the client %d\n",client_requests);
         }
-        printf("thread %d ended after registration\n",y);
+        PRINT_INFO("thread %d ended after registration\n",y);
         pthread_exit(0);
 }
 
@@ -201,7 +219,7 @@ int register_client(struct connect* con)
     
     con->key = 33+space;
     key_t key_comm = ftok(".",con->key);
-    printf("created thread with key %c\n",con->key);
+    PRINT_INFO("created thread with key %c\n",con->key);
     int id = shmget(key_comm,SHM_SIZE,IPC_CREAT | 0666);
     if (id < 0) 
     {
@@ -214,14 +232,14 @@ int register_client(struct connect* con)
         perror("Communication channel pointer error");
         exit(1);
     }
-    printf("Comm channel %d successfully created\n", space);
+    PRINT_INFO("Comm channel %d successfully created\n", space);
     comm->mutex = 1;
     comm->id = id;
     comm->space = space;
     comm->res.server_res =0;
     pthread_create(tid+space,NULL,thr,comm);
     con->reg = IDLE;//tell it's registration is complete and get lost
-    printf("Client %d has been Registered\n",space);
+    PRINT_INFO("Client %d has been Registered\n",space);
     return 1;
 }
 //Main Function
@@ -241,7 +259,7 @@ int main()
         perror("shmget");
         exit(1);
     }
-    printf("Connect Channel Successfully created\n");
+    PRINT_INFO("Connect Channel Successfully created\n");
     con = (struct connect*) shmat(shmid, NULL, 0);
     if (con == (struct connect*) -1)
     {
@@ -257,25 +275,25 @@ int main()
         {
             if(con->reg == REGISTER && first_available() != -1)
         {
-            printf("Register initiated\n");
+            PRINT_INFO("Register initiated\n");
             register_client(con);
             con->reg = IDLE;
         }
         else if(first_available() == -1)
         {
-            printf("Max clients reached");
+            PRINT_ERROR("Max clients reached");
         }
         }
     // detach the shared memory segment from the server's address space
     if (shmdt(con) == -1)
      {
-        perror("shmdt");
+        PRINT_ERR_EXIT("shmdt");
         exit(1);
     }
     // delete the shared memory segment
     if (shmctl(shmid, IPC_RMID, NULL) == -1) 
     {
-        perror("shmctl");
+        PRINT_ERR_EXIT("shmctl");
         exit(1);
     }
     for(int i = 0;i<MAX_CLIENT;i++)

@@ -19,6 +19,24 @@
 #define EVENODD 4
 #define ISNEGETIVE 5
 #define IDLE 6
+#define PRINT_INFO(MSG, ...) { \
+	printf ( "%s INFO %d:%d %ld %s %s %d : " MSG ";;\n", \
+	"TODO_PRINT_TIME", getpid(), getppid(), pthread_self(), __FILE__, __FUNCTION__, \
+	__LINE__,  ##__VA_ARGS__); \
+}
+
+#define PRINT_ERROR(MSG, ...) { \
+	printf ( "%s ERROR %d:%d %ld %s %s %d : [%d] " MSG ";;\n", \
+	"TODO_PRINT_TIME", getpid(), getppid(), pthread_self(), __FILE__, __FUNCTION__, \
+	__LINE__,  errno, ##__VA_ARGS__);	\
+	}
+	
+#define PRINT_ERR_EXIT(MSG, ...) { \
+	printf ( "%s ERROR %d:%d %ld %s %s %d : [%d] " MSG ";;\n", \
+	"TODO_PRINT_TIME", getpid(), getppid(), pthread_self(), __FILE__, __FUNCTION__, \
+	__LINE__,  errno, ##__VA_ARGS__);	\
+	_exit(-1); \
+	}
 struct request{
     int type;
     int N1;
@@ -83,79 +101,79 @@ int main()
     switch(select)
     {
         case REGISTER:
-            printf("Requesting to register\n");
+            PRINT_INFO("Requesting to register\n");
             while(con->mutex){};
             con->mutex = 1;
             con->reg = REGISTER;
-            printf("Request sent to register\n");
+            PRINT_INFO("Request sent to register\n");
             while(con->reg == REGISTER){};
             reg_key =  con->key;
-            printf("You are successfully registered. Your Key: key%c\n",reg_key);
+            PRINT_INFO("You are successfully registered. Your Key: key%c\n",reg_key);
             con->mutex =0;
             break;
         case UNREGISTER:
-            printf("Provide your key: ");
+            PRINT_INFO("Provide your key: ");
             scanf(" key%c",&reg_key);
             key_comm = ftok(".",reg_key);
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
             if (comm_id<0)
             {
-                printf("your key hasn't been registered\n");
+                PRINT_INFO("your key hasn't been registered\n");
                 break;
             }
             comm = (struct shm_blk*)shmat(comm_id, NULL, 0);
             if (comm == (struct shm_blk*) -1)
             {
-                printf("your key hasn't been registered\n");
+                PRINT_ERROR("your key hasn't been registered\n");
                 break;
             }
-            printf("Connected successfully to comm channel\n");
+            PRINT_INFO("Connected successfully to comm channel\n");
             comm->req.type = UNREGISTER;
-            printf("Request sent to unregister\n");
+            PRINT_INFO("Request sent to unregister\n");
             comm->mutex= 0;
             while(comm->res.clnt_res != 1){};
-             printf("Unregistration Successful\n");
+             PRINT_INFO("Unregistration Successful\n");
             break;
         case ARITH:
-            printf("Provide your key: ");
+            PRINT_INFO("Provide your key: ");
             fflush(stdout);
             fflush(stdin);
             scanf(" key%c",&reg_key);
-            printf("\n");
+            PRINT_INFO("\n");
             key_comm = ftok(".",reg_key);
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
             if (comm_id<0)
             {
-                printf("your key hasn't been registered\n");
+                PRINT_ERROR("your key hasn't been registered\n");
                 break;
             }
             comm = (struct shm_blk*)shmat(comm_id, NULL, 0);
             if (comm == (struct shm_blk*) -1)
             {
-                printf("your key hasn't been registered\n");
+                PRINT_ERROR("your key hasn't been registered\n");
                 break;
             }
-            printf("connected successfully to comm channel\n");
+            PRINT_INFO("connected successfully to comm channel\n");
             comm->req.type = ARITH;
-            printf("Request sent for Arithmetic\n");
-            printf("Enter your number for N1 :");
+            PRINT_INFO("Request sent for Arithmetic\n");
+            PRINT_INFO("Enter your number for N1 :");
             scanf(" %d",&N1);
             printf("\n");
             comm->req.N1 = N1;
-            printf("Enter your Second Number N2 :");
+            PRINT_INFO("Enter your Second Number N2 :");
             scanf(" %d",&N2);
             printf("\n");
             comm->req.N2 = N2;
-            printf("Operand :");
+            PRINT_INFO("Operand :");
             scanf(" %c",&operand);
             printf("\n");
             comm->req.operand = operand;
             comm->mutex= 0;
             while(comm->res.clnt_res != 1){};
-            printf("Result %d\n",comm->res.out);
+            PRINT_INFO("Result %d\n",comm->res.out);
             break;
         case ISPRIME:
-           printf("Provide your key: ");
+           PRINT_INFO("Provide your key: ");
             fflush(stdout);
             fflush(stdin);
             scanf(" key%c",&reg_key);
@@ -164,19 +182,19 @@ int main()
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
             if (comm_id<0)
             {
-                printf("your key hasn't been registered\n");
+                PRINT_INFO("your key hasn't been registered\n");
                 break;
             }
             comm = (struct shm_blk*)shmat(comm_id, NULL, 0);
             if (comm == (struct shm_blk*) -1)
             {
-                printf("your key hasn't been registered\n");
+                PRINT_ERROR("your key hasn't been registered\n");
                 break;
             }
-            printf("connected successfully to comm channel\n");
+            PRINT_INFO("connected successfully to comm channel\n");
             comm->req.type = ISPRIME;
-            printf("Request sent for Prime check\n");
-            printf("Enter your number for N1 :");
+            PRINT_INFO("Request sent for Prime check\n");
+            PRINT_INFO("Enter your number for N1 :");
             scanf(" %d",&N1);
             printf("\n");
             comm->req.N1 = N1;
@@ -184,15 +202,15 @@ int main()
             while(comm->res.clnt_res != 1){};
             if(comm->res.out==1)
             {
-                printf("It is Prime\n");
+                PRINT_INFO("It is Prime\n");
             }
             else{
-                printf("Not a Prime\n");
+                PRINT_INFO("Not a Prime\n");
             }
             
             break;
         case EVENODD:
-            printf("Provide your key: ");
+            PRINT_INFO("Provide your key: ");
             fflush(stdout);
             fflush(stdin);
             scanf(" key%c",&reg_key);
@@ -201,28 +219,28 @@ int main()
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
             if (comm_id<0)
             {
-                printf("your key hasn't been registered\n");
+                PRINT_ERROR("your key hasn't been registered\n");
                 break;
             }
             comm = (struct shm_blk*)shmat(comm_id, NULL, 0);
             if (comm == (struct shm_blk*) -1)
             {
-                printf("your key hasn't been registered\n");
+                PRINT_ERROR("your key hasn't been registered\n");
                 break;
             }
-            printf("connected successfully to comm channel\n");
+            PRINT_INFO("connected successfully to comm channel\n");
             comm->req.type = EVENODD;
-            printf("Request sent for Even check\n");
-            printf("Enter your number for N1 :");
+            PRINT_INFO("Request sent for Even check\n");
+            PRINT_INFO("Enter your number for N1 :");
             scanf(" %d",&N1);
             printf("\n");
             comm->req.N1 = N1;
             comm->mutex= 0;
             while(comm->res.clnt_res != 1){};
-            printf("Server respoded with success\n");
+            PRINT_INFO("Server responded with success\n");
             if(comm->res.out==1)
             {
-                printf("It is Even\n");
+                PRINT_INFO("It is Even\n");
             }
             else{
                 printf("It is odd\n");
@@ -238,19 +256,19 @@ int main()
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
             if (comm_id<0)
             {
-                printf("your key hasn't been registered\n");
+                PRINT_ERROR("your key hasn't been registered\n");
                 break;
             }
             comm = (struct shm_blk*)shmat(comm_id, NULL, 0);
             if (comm == (struct shm_blk*) -1)
             {
-                printf("your key hasn't been registered\n");
+                PRINT_ERROR("your key hasn't been registered\n");
                 break;
             }
-            printf("connected successfully to comm channel\n");
+            PRINT_INFO("connected successfully to comm channel\n");
             comm->req.type = ISNEGETIVE;
-            printf("Request sent for Negetive check\n");
-            printf("Enter your number for N1 :");
+            PRINT_INFO("Request sent for Negetive check\n");
+            PRINT_INFO("Enter your number for N1 :");
             scanf(" %d",&N1);
             printf("\n");
             comm->req.N1 = N1;
@@ -258,10 +276,10 @@ int main()
             while(comm->res.clnt_res != 1){};
             if(comm->res.out==1)
             {
-                printf("It is Negetive\n");
+                PRINT_INFO("It is Negetive\n");
             }
             else{
-                printf("It is positive\n");
+                PRINT_INFO("It is positive\n");
             }
             break;
      }
