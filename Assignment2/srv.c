@@ -113,7 +113,7 @@ void *sum (void *param)
     int input;
     while(1)
     {
-        if(scanf("%d",&input)){printf("total requests processed %d\n total clients registers %d\n",client_requests,total_clients());}
+        if(scanf("%d",&input)){printf("total requests processed %d\ntotal clients registered %d\n",client_requests,total_clients());}
     }
 }
 
@@ -133,14 +133,15 @@ void *thr (void *param)
             y = comm->space;
             shmdt(comm);
             shmctl(x, IPC_RMID, NULL);
-            flag[y] == FALSE;
+            flag[y] = FALSE;
             printf("Client%d's comm channel has been successfully deleted\n",y);
+            client_requests += 1;
             break;
         }
         switch((comm->req).type)
         {
             case ARITH: 
-                printf("Request for Arith recieved\n");
+                printf("Request for Arithmetic recieved\n");
                 (comm->res).out = arithmetic_operation((comm->req).N1,(comm->req).N2,(comm->req).operand);
                 break;
             case ISPRIME:
@@ -251,7 +252,7 @@ int main()
     con->reg = IDLE;
     //thread to give info
     pthread_create(&p,NULL,sum,NULL);
-    printf("\nFor summary press anything\n");
+    printf("\nFor summary press any number\n");
     while(TRUE)//Put something so that it will stop at some point
         {
             if(con->reg == REGISTER && first_available() != -1)
