@@ -90,12 +90,12 @@ int main()
             printf("Request sent to register\n");
             while(con->reg == REGISTER){};
             reg_key =  con->key;
-            printf("You are successfully registered. Your Key:   %c\n",reg_key);
+            printf("You are successfully registered. Your Key: key%c\n",reg_key);
             con->mutex =0;
             break;
         case UNREGISTER:
             printf("Provide your key: ");
-            scanf(" %c",&reg_key);
+            scanf(" key%c",&reg_key);
             key_comm = ftok(".",reg_key);
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
             if (comm_id<0)
@@ -120,7 +120,7 @@ int main()
             printf("Provide your key: ");
             fflush(stdout);
             fflush(stdin);
-            scanf(" %c",&reg_key);
+            scanf(" key%c",&reg_key);
             printf("\n");
             key_comm = ftok(".",reg_key);
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
@@ -158,7 +158,7 @@ int main()
            printf("Provide your key: ");
             fflush(stdout);
             fflush(stdin);
-            scanf(" %c",&reg_key);
+            scanf(" key%c",&reg_key);
             printf("\n");
             key_comm = ftok(".",reg_key);
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
@@ -195,7 +195,7 @@ int main()
             printf("Provide your key: ");
             fflush(stdout);
             fflush(stdin);
-            scanf(" %c",&reg_key);
+            scanf(" key%c",&reg_key);
             printf("\n");
             key_comm = ftok(".",reg_key);
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
@@ -232,7 +232,7 @@ int main()
             printf("Provide your key: ");
             fflush(stdout);
             fflush(stdin);
-            scanf(" %c",&reg_key);
+            scanf(" key%c",&reg_key);
             printf("\n");
             key_comm = ftok(".",reg_key);
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
