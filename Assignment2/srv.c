@@ -1,3 +1,7 @@
+//Assignment 2 
+//Sriharsha Tippavajhala 2021AAPS0717H
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -7,8 +11,6 @@
 #include <sys/mman.h>
 #include <string.h>
 #include <pthread.h>
-#include <iostream>
-using namespace std;
 #define SHM_SIZE 1024
 #define TRUE 1
 #define FALSE 0
@@ -22,7 +24,6 @@ using namespace std;
 #define EVENODD 4
 #define ISNEGETIVE 5
 #define IDLE 6
-#define TEST cout<<"TEST";
 int flag[MAX_CLIENT]={0};//Takes care of how many clients are registered
 int to_register[MAX_CLIENT]={0};
 pthread_t* tid;
@@ -53,7 +54,7 @@ int arithmetic_operation(int N1, int N2, char Operation) {
             result = N1 / N2;
             break;
         default:
-            printf("Invalid operation");
+            printf("Invalid operation\n");
             result = 0;
     }
     return result;
@@ -97,49 +98,49 @@ struct connect
 };
 
 void *thr (void *param)
-{
-    cout<<"thread has been created"<<endl;
+{   int x;
+    int y;
     struct shm_blk* comm =  (struct shm_blk*)param;
-    cout<<comm->mutex<<endl;
     while(TRUE)
         {
+            
         comm->res.clnt_res = 0;
-        cout<<"it is locked"<<endl;
-        cout<<comm->id<<endl;
         while(comm->mutex){};
-        cout<<"it got unlocked";
         comm->mutex=1;
         if((comm->req).type == UNREGISTER)
         {   comm->res.clnt_res = 1;
-            int x = comm->id;
-            int y = comm->space;
+            x = comm->id;
+            y = comm->space;
             shmdt(comm);
             shmctl(x, IPC_RMID, NULL);
             flag[y] == FALSE;
-            printf("Client%d's comm channel has been successfully deleted",y);
+            printf("Client%d's comm channel has been successfully deleted\n",y);
             break;
         }
-        printf("Service request successfully recieved");
         switch((comm->req).type)
         {
             case ARITH: 
-                cout<<"tried arith"<<endl;
+                printf("Request for Arith recieved\n");
                 (comm->res).out = arithmetic_operation((comm->req).N1,(comm->req).N2,(comm->req).operand);
                 break;
             case ISPRIME:
+                printf("Request for prime check recieved\n");
                 (comm->res).out = prchk((comm->req).N1);
                 break;
             case EVENODD:
+                printf("Request for evenodd check recieved\n");
                 (comm->res).out = even_or_odd((comm->req).N1);
                 break;
-            case ISNEGETIVE : (comm->res).out = is_negetive((comm->req).N1);break;
+            case ISNEGETIVE :
+                printf("Request for negetive check recieved\n");
+                (comm->res).out = is_negetive((comm->req).N1);break;
         }
-        printf("Success!The result has been sent on comm channel");
+        printf("Success!The result has been sent on comm channel\n");
         comm->res.clnt_res = 1;
         comm->res.server_res += 1;
-        printf("Requests serviced by this client = %d time", comm->res.server_res);
+        printf("Requests serviced by this client = %d time\n", comm->res.server_res);
         }
-        cout<<"returned"<<endl;
+        printf("thread %d ended after registration\n",y);
         pthread_exit(0);
 }
 
@@ -176,28 +177,27 @@ int register_client(struct connect* con)
     
     con->key = 33+space;
     key_t key_comm = ftok(".",con->key);
-    cout<<"created thread with key"<<key_comm<<endl;
+    printf("created thread with key %c\n",con->key);
     int id = shmget(key_comm,SHM_SIZE,IPC_CREAT | 0666);
     if (id < 0) 
     {
         perror("Error in making comm id");
         exit(1);
     }
-    cout<<id<<endl;
     struct shm_blk* comm = (struct shm_blk*)shmat(id, NULL, 0);
     if (comm == (struct shm_blk*) -1)
     {
         perror("Communication channel pointer error");
         exit(1);
     }
-    printf("Comm channel %d successfully created", space);
+    printf("Comm channel %d successfully created\n", space);
     comm->mutex = 1;
     comm->id = id;
     comm->space = space;
     comm->res.server_res =0;
     pthread_create(tid+space,NULL,thr,comm);
     con->reg = IDLE;//tell it's registration is complete and get lost
-    cout<<"Client"<<space<<"has been Registered"<<endl;
+    printf("Client %d has been Registered\n",space);
     return 1;
 }
 //Main Function
@@ -208,7 +208,7 @@ int main()
     struct connect* con;
     tid = (pthread_t*)malloc(MAX_CLIENT*sizeof(pthread_t));
     //CONNECT CHANNEL KEY
-    key_connect = 13;
+    key_connect = ftok(".",10);
     // create the shared memory segment with read/write permission
     shmid = shmget(key_connect, sizeof(struct connect), IPC_CREAT | 0666);
     if (shmid < 0) 
@@ -225,14 +225,17 @@ int main()
     }
     con->mutex = 0;
     con->reg = IDLE;
-    con->key = 'A';
-    while(1)//Put something so that it will stop at some point
+    while(TRUE)//Put something so that it will stop at some point
         {
-            if(con->reg == REGISTER)
+            if(con->reg == REGISTER && first_available() != -1)
         {
-            cout<<"Register"<<endl;
+            printf("Register initiated\n");
             register_client(con);
             con->reg = IDLE;
+        }
+        else if(first_available() == -1)
+        {
+            printf("Max clients reached");
         }
         }
     // detach the shared memory segment from the server's address space

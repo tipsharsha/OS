@@ -6,8 +6,6 @@
 #include <sys/shm.h>
 #include <sys/mman.h>
 #include <string.h>
-#include <iostream>
-using namespace std;
 #define SHM_SIZE 1024
 #define TRUE 1
 #define FALSE 0
@@ -56,7 +54,7 @@ int main()
     struct connect* con;
     
     // generate the same key used by the server for the shared memory segment
-    key = 13;
+    key = ftok(".",10);
 
     // get the shared memory segment created by the server
     shmid = shmget(key, sizeof(struct connect), IPC_CREAT|0666);
@@ -80,7 +78,8 @@ int main()
     char want_continue ='y';
     while(want_continue == 'y')
     {printf("Enter your choice \n 0-Register\n 1-Unregister\n 2-Arithmetic\n 3-IsPrime\n 4-EvenOdd \n 5-ISNEGETIVE\n : ");
-    scanf("%d",&select);
+    scanf(" %d",&select);
+    fflush(stdin);
     switch(select)
     {
         case REGISTER:
@@ -96,7 +95,7 @@ int main()
             break;
         case UNREGISTER:
             printf("Provide your key: ");
-            cin>>reg_key;
+            scanf(" %c",&reg_key);
             key_comm = ftok(".",reg_key);
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
             if (comm_id<0)
@@ -121,7 +120,7 @@ int main()
             printf("Provide your key: ");
             fflush(stdout);
             fflush(stdin);
-            cin>>reg_key;
+            scanf(" %c",&reg_key);
             printf("\n");
             key_comm = ftok(".",reg_key);
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
@@ -140,15 +139,15 @@ int main()
             comm->req.type = ARITH;
             printf("Request sent for Arithmetic\n");
             printf("Enter your number for N1 :");
-            scanf("%d",&N1);
+            scanf(" %d",&N1);
             printf("\n");
             comm->req.N1 = N1;
             printf("Enter your Second Number N2 :");
-            scanf("%d",&N2);
+            scanf(" %d",&N2);
             printf("\n");
             comm->req.N2 = N2;
-            printf("Operand");
-            cin>>operand;
+            printf("Operand :");
+            scanf(" %c",&operand);
             printf("\n");
             comm->req.operand = operand;
             comm->mutex= 0;
@@ -159,7 +158,7 @@ int main()
            printf("Provide your key: ");
             fflush(stdout);
             fflush(stdin);
-            cin>>reg_key;
+            scanf(" %c",&reg_key);
             printf("\n");
             key_comm = ftok(".",reg_key);
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
@@ -178,7 +177,7 @@ int main()
             comm->req.type = ISPRIME;
             printf("Request sent for Prime check\n");
             printf("Enter your number for N1 :");
-            scanf("%d",&N1);
+            scanf(" %d",&N1);
             printf("\n");
             comm->req.N1 = N1;
             comm->mutex= 0;
@@ -196,7 +195,7 @@ int main()
             printf("Provide your key: ");
             fflush(stdout);
             fflush(stdin);
-            cin>>reg_key;
+            scanf(" %c",&reg_key);
             printf("\n");
             key_comm = ftok(".",reg_key);
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
@@ -215,7 +214,7 @@ int main()
             comm->req.type = EVENODD;
             printf("Request sent for Even check\n");
             printf("Enter your number for N1 :");
-            scanf("%d",&N1);
+            scanf(" %d",&N1);
             printf("\n");
             comm->req.N1 = N1;
             comm->mutex= 0;
@@ -233,7 +232,7 @@ int main()
             printf("Provide your key: ");
             fflush(stdout);
             fflush(stdin);
-            cin>>reg_key;
+            scanf(" %c",&reg_key);
             printf("\n");
             key_comm = ftok(".",reg_key);
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
@@ -252,7 +251,7 @@ int main()
             comm->req.type = ISNEGETIVE;
             printf("Request sent for Negetive check\n");
             printf("Enter your number for N1 :");
-            scanf("%d",&N1);
+            scanf(" %d",&N1);
             printf("\n");
             comm->req.N1 = N1;
             comm->mutex= 0;
@@ -268,7 +267,7 @@ int main()
      }
     
         printf("Do want to continue? (y/n): ");
-        cin>>want_continue;
+        scanf(" %c",&want_continue);
         printf("\n");
     }
 
