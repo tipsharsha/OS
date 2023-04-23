@@ -1,7 +1,5 @@
 //Assignment 2 
 //Sriharsha Tippavajhala 2021AAPS0717H
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -250,6 +248,10 @@ int main()
         perror("shmctl");
         exit(1);
     }
+    for(int i = 0;i<MAX_CLIENT;i++)
+    {
+    pthread_join(tid[i],NULL);
     return 0;
+    }
     free(tid);
 }
