@@ -24,6 +24,7 @@
 #define IDLE 6
 int flag[MAX_CLIENT]={0};//Takes care of how many clients are registered
 int to_register[MAX_CLIENT]={0};
+int client_requests =0;
 pthread_t* tid;
 int prchk(int num)//
 {
@@ -35,6 +36,18 @@ int prchk(int num)//
         }
     }
     return 1;
+}
+int total_clients()
+{
+    int num=0;
+    for(int i =0;i<MAX_CLIENT;i++ )
+    {
+        if (flag[i])
+        {
+            num += 1;
+        }
+    }
+    return num;
 }
 int arithmetic_operation(int N1, int N2, char Operation) {
     int result;
@@ -95,6 +108,15 @@ struct connect
     char key;
 };
 
+void *sum (void *param)
+{
+    int input;
+    while(1)
+    {
+        if(scanf("%d",&input)){printf("total requests processed %d\n total clients registers %d\n",client_requests,total_clients());}
+    }
+}
+
 void *thr (void *param)
 {   int x;
     int y;
@@ -136,7 +158,10 @@ void *thr (void *param)
         printf("Success!The result has been sent on comm channel\n");
         comm->res.clnt_res = 1;
         comm->res.server_res += 1;
-        printf("Requests serviced by this client = %d time\n", comm->res.server_res);
+        client_requests += 1;
+        printf("Requests serviced to this client = %d time\n", comm->res.server_res);
+        fflush(stdout);
+        printf("Total requests handled by the client %d\n",client_requests);
         }
         printf("thread %d ended after registration\n",y);
         pthread_exit(0);
@@ -204,6 +229,7 @@ int main()
     int shmid;
     key_t key_connect;
     struct connect* con;
+    pthread_t p;
     tid = (pthread_t*)malloc(MAX_CLIENT*sizeof(pthread_t));
     //CONNECT CHANNEL KEY
     key_connect = ftok(".",10);
@@ -223,6 +249,9 @@ int main()
     }
     con->mutex = 0;
     con->reg = IDLE;
+    //thread to give info
+    pthread_create(&p,NULL,sum,NULL);
+    printf("\nFor summary press anything\n");
     while(TRUE)//Put something so that it will stop at some point
         {
             if(con->reg == REGISTER && first_available() != -1)
