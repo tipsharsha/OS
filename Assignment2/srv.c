@@ -9,6 +9,7 @@
 #include <sys/mman.h>
 #include <string.h>
 #include <pthread.h>
+#include <errno.h>
 #define SHM_SIZE 1024
 #define TRUE 1
 #define FALSE 0
@@ -152,7 +153,7 @@ void *thr (void *param)
             shmdt(comm);
             shmctl(x, IPC_RMID, NULL);
             flag[y] = FALSE;
-            PRINTINFO("Client%d's comm channel has been successfully deleted\n",y);
+            PRINT_INFO("Client%d's comm channel has been successfully deleted\n",y);
             client_requests += 1;
             break;
         }
