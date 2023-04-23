@@ -65,7 +65,6 @@ int even_or_odd(int N1) {
         return FALSE;
     }
 }
-
 int is_negetive(int n)
     {if (n<0){return TRUE;}
     return FALSE;
@@ -88,8 +87,8 @@ struct shm_blk// struct made for blk requested
     struct request req;
     struct response res;
     int id;
+    int space;
 };
-
 struct connect
 {
     int mutex;
@@ -110,15 +109,21 @@ void *thr (void *param)
         while(comm->mutex){};
         cout<<"it got unlocked";
         comm->mutex=1;
+        if((comm->req).type == UNREGISTER)
+        {   comm->res.clnt_res = 1;
+            int x = comm->id;
+            int y = comm->space;
+            shmdt(comm);
+            shmctl(x, IPC_RMID, NULL);
+            flag[y] == FALSE;
+            printf("Client%d's comm channel has been successfully deleted",y);
+            break;
+        }
+        printf("Service request successfully recieved");
         switch((comm->req).type)
-        {   
-            case UNREGISTER:
-                shmdt(comm);
-                shmctl(comm->id, IPC_RMID, NULL);
-                break;
-
+        {
             case ARITH: 
-                cout<<"tried aarith"<<endl;
+                cout<<"tried arith"<<endl;
                 (comm->res).out = arithmetic_operation((comm->req).N1,(comm->req).N2,(comm->req).operand);
                 break;
             case ISPRIME:
@@ -129,10 +134,13 @@ void *thr (void *param)
                 break;
             case ISNEGETIVE : (comm->res).out = is_negetive((comm->req).N1);break;
         }
+        printf("Success!The result has been sent on comm channel");
         comm->res.clnt_res = 1;
         comm->res.server_res += 1;
-        printf("You have been served for %dth time", comm->res.server_res);
-        }pthread_exit(0);
+        printf("Requests serviced by this client = %d time", comm->res.server_res);
+        }
+        cout<<"returned"<<endl;
+        pthread_exit(0);
 }
 
 //Function to search first space available in buffer
@@ -170,10 +178,23 @@ int register_client(struct connect* con)
     key_t key_comm = ftok(".",con->key);
     cout<<"created thread with key"<<key_comm<<endl;
     int id = shmget(key_comm,SHM_SIZE,IPC_CREAT | 0666);
+    if (id < 0) 
+    {
+        perror("Error in making comm id");
+        exit(1);
+    }
     cout<<id<<endl;
     struct shm_blk* comm = (struct shm_blk*)shmat(id, NULL, 0);
+    if (comm == (struct shm_blk*) -1)
+    {
+        perror("Communication channel pointer error");
+        exit(1);
+    }
+    printf("Comm channel %d successfully created", space);
     comm->mutex = 1;
     comm->id = id;
+    comm->space = space;
+    comm->res.server_res =0;
     pthread_create(tid+space,NULL,thr,comm);
     con->reg = IDLE;//tell it's registration is complete and get lost
     cout<<"Client"<<space<<"has been Registered"<<endl;

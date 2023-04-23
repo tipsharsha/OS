@@ -39,6 +39,7 @@ struct shm_blk// struct made for blk requested
     struct request req;
     struct response res;
     int id;
+    int space;
 };
 
 struct connect
@@ -76,129 +77,201 @@ int main()
     int N1,N2;
     char operand;
     struct shm_blk* comm;
-    int want_continue =1;
-    printf("%d",con->mutex); 
-    while(want_continue)
-    {printf("Enter your choice \n 0-Register\n 1-Unregister\n 2-Arithmetic\n 3-IsPrime\n 4-EvenOdd \n 5-ISNEGETIVE\n");
+    char want_continue ='y';
+    while(want_continue == 'y')
+    {printf("Enter your choice \n 0-Register\n 1-Unregister\n 2-Arithmetic\n 3-IsPrime\n 4-EvenOdd \n 5-ISNEGETIVE\n : ");
     scanf("%d",&select);
     switch(select)
     {
         case REGISTER:
-            printf("Entered Register");
+            printf("Requesting to register\n");
             while(con->mutex){};
             con->mutex = 1;
             con->reg = REGISTER;
+            printf("Request sent to register\n");
             while(con->reg == REGISTER){};
             reg_key =  con->key;
-            // printf("You are successfully registered Your Key:%c",key_comm);
-            cout<<reg_key<<endl;
+            printf("You are successfully registered. Your Key:   %c\n",reg_key);
             con->mutex =0;
             break;
         case UNREGISTER:
-            // printf("Provide your key: ");
-            cout<<"provide your key"<<endl;
-            scanf("%c",&reg_key);
-            key_comm = ftok(".", reg_key);
-            comm_id = shmget(key_comm, CONNECT_SIZE, IPC_CREAT | 0666);
-            comm = (struct shm_blk*)shmat(shmid, NULL, 0);
+            printf("Provide your key: ");
+            cin>>reg_key;
+            key_comm = ftok(".",reg_key);
+            comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
+            if (comm_id<0)
+            {
+                printf("your key hasn't been registered\n");
+                break;
+            }
+            comm = (struct shm_blk*)shmat(comm_id, NULL, 0);
+            if (comm == (struct shm_blk*) -1)
+            {
+                printf("your key hasn't been registered\n");
+                break;
+            }
+            printf("Connected successfully to comm channel\n");
             comm->req.type = UNREGISTER;
+            printf("Request sent to unregister\n");
             comm->mutex= 0;
             while(comm->res.clnt_res != 1){};
-            cout<<"Ureg"<<endl;
+             printf("Unregistration Successful\n");
             break;
-            // printf("Unregistration Successful");
         case ARITH:
             printf("Provide your key: ");
             fflush(stdout);
             fflush(stdin);
             cin>>reg_key;
+            printf("\n");
             key_comm = ftok(".",reg_key);
-            cout<<key_comm<<endl; 
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
+            if (comm_id<0)
+            {
+                printf("your key hasn't been registered\n");
+                break;
+            }
             comm = (struct shm_blk*)shmat(comm_id, NULL, 0);
+            if (comm == (struct shm_blk*) -1)
+            {
+                printf("your key hasn't been registered\n");
+                break;
+            }
+            printf("connected successfully to comm channel\n");
             comm->req.type = ARITH;
-            cout<<comm->id<<endl;
-            cout<<comm->mutex<<endl;
-            printf("Enter your number for N1");
+            printf("Request sent for Arithmetic\n");
+            printf("Enter your number for N1 :");
             scanf("%d",&N1);
+            printf("\n");
             comm->req.N1 = N1;
-            printf("Enter your Second Number N2\n");
+            printf("Enter your Second Number N2 :");
             scanf("%d",&N2);
+            printf("\n");
             comm->req.N2 = N2;
             printf("Operand");
             cin>>operand;
+            printf("\n");
             comm->req.operand = operand;
             comm->mutex= 0;
             while(comm->res.clnt_res != 1){};
-            printf("Output %d",comm->res.out);
+            printf("Result %d\n",comm->res.out);
             break;
         case ISPRIME:
            printf("Provide your key: ");
             fflush(stdout);
             fflush(stdin);
             cin>>reg_key;
+            printf("\n");
             key_comm = ftok(".",reg_key);
-            cout<<key_comm<<endl; 
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
+            if (comm_id<0)
+            {
+                printf("your key hasn't been registered\n");
+                break;
+            }
             comm = (struct shm_blk*)shmat(comm_id, NULL, 0);
+            if (comm == (struct shm_blk*) -1)
+            {
+                printf("your key hasn't been registered\n");
+                break;
+            }
+            printf("connected successfully to comm channel\n");
             comm->req.type = ISPRIME;
-            cout<<comm->id<<endl;
-            cout<<comm->mutex<<endl;
-            printf("Enter your number for N1");
+            printf("Request sent for Prime check\n");
+            printf("Enter your number for N1 :");
             scanf("%d",&N1);
+            printf("\n");
             comm->req.N1 = N1;
             comm->mutex= 0;
             while(comm->res.clnt_res != 1){};
-            printf("Output %d",comm->res.out);
+            if(comm->res.out==1)
+            {
+                printf("It is Prime\n");
+            }
+            else{
+                printf("Not a Prime\n");
+            }
+            
             break;
         case EVENODD:
             printf("Provide your key: ");
             fflush(stdout);
             fflush(stdin);
             cin>>reg_key;
+            printf("\n");
             key_comm = ftok(".",reg_key);
-            cout<<key_comm<<endl; 
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
+            if (comm_id<0)
+            {
+                printf("your key hasn't been registered\n");
+                break;
+            }
             comm = (struct shm_blk*)shmat(comm_id, NULL, 0);
+            if (comm == (struct shm_blk*) -1)
+            {
+                printf("your key hasn't been registered\n");
+                break;
+            }
+            printf("connected successfully to comm channel\n");
             comm->req.type = EVENODD;
-            cout<<comm->id<<endl;
-            cout<<comm->mutex<<endl;
-            printf("Enter your number for N1");
+            printf("Request sent for Even check\n");
+            printf("Enter your number for N1 :");
             scanf("%d",&N1);
+            printf("\n");
             comm->req.N1 = N1;
             comm->mutex= 0;
             while(comm->res.clnt_res != 1){};
-            printf("Output %d",comm->res.out);
+            printf("Server respoded with success\n");
+            if(comm->res.out==1)
+            {
+                printf("It is Even\n");
+            }
+            else{
+                printf("It is odd\n");
+            }
             break;
         case ISNEGETIVE:
             printf("Provide your key: ");
             fflush(stdout);
             fflush(stdin);
             cin>>reg_key;
+            printf("\n");
             key_comm = ftok(".",reg_key);
-            cout<<key_comm<<endl; 
             comm_id = shmget(key_comm,SHM_SIZE, IPC_CREAT | 0666);
+            if (comm_id<0)
+            {
+                printf("your key hasn't been registered\n");
+                break;
+            }
             comm = (struct shm_blk*)shmat(comm_id, NULL, 0);
+            if (comm == (struct shm_blk*) -1)
+            {
+                printf("your key hasn't been registered\n");
+                break;
+            }
+            printf("connected successfully to comm channel\n");
             comm->req.type = ISNEGETIVE;
-            cout<<comm->id<<endl;
-            cout<<comm->mutex<<endl;
-            printf("Enter your number for N1");
+            printf("Request sent for Negetive check\n");
+            printf("Enter your number for N1 :");
             scanf("%d",&N1);
+            printf("\n");
             comm->req.N1 = N1;
             comm->mutex= 0;
             while(comm->res.clnt_res != 1){};
-            printf("Output %d",comm->res.out);
+            if(comm->res.out==1)
+            {
+                printf("It is Negetive\n");
+            }
+            else{
+                printf("It is positive\n");
+            }
             break;
      }
-    printf("want to continue");
-    scanf("%d",&want_continue);
+    
+        printf("Do want to continue? (y/n): ");
+        cin>>want_continue;
+        printf("\n");
     }
 
-    // read the message from the shared memory and write a response
-    
-
-    // tell the server that the client has finished writing the response
-    // detach the shared memory segment from the client's address space
     if (shmdt(con) == -1) {
         perror("shmdt");
         exit(1);

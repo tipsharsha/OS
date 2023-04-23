@@ -1,4 +1,7 @@
 {
     "C_Cpp.errorSquiggles": "disabled",
-    "cmake.sourceDirectory": "/home/tipsharsha/Code/OS/Assignment2"
+    "cmake.sourceDirectory": "/home/tipsharsha/Code/OS/Assignment2",
+    "files.associations": {
+        "iostream": "cpp"
+    }
 }
